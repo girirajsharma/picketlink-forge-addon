@@ -2,6 +2,7 @@ package org.picketlink.tools.forge;
 
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.addon.dependencies.Coordinate;
+import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.facets.DependencyFacet;
 import org.junit.Test;
@@ -13,6 +14,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.picketlink.tools.forge.ConfigurationOperations.DEFAULT_TOP_LEVEL_PACKAGE;
 
 @RunWith(Arquillian.class)
 public class PicketLinkSetupCommandTestCase extends AbstractTestCase {
@@ -26,14 +28,16 @@ public class PicketLinkSetupCommandTestCase extends AbstractTestCase {
             executeShellCommand("picketlink-setup")
         );
 
-        Coordinate latestVersion = this.mavenDependencies.resolveLatestVersion();
+        assertCommandResult(getLatestVersion(), true, null);
+    }
 
-        assertCommandResult(latestVersion, true);
+    private Coordinate getLatestVersion() {
+        return this.mavenDependencies.resolveLatestVersion();
     }
 
     @Test
     public void testSetupWithVersion() throws Exception {
-        Coordinate latestVersion = this.mavenDependencies.resolveLatestVersion();
+        Coordinate latestVersion = getLatestVersion();
         List<Coordinate> availableVersions = this.mavenDependencies.resolveVersions(false);
         Coordinate selectedVersion = null;
 
@@ -50,7 +54,7 @@ public class PicketLinkSetupCommandTestCase extends AbstractTestCase {
             executeShellCommand("picketlink-setup --version " + selectedVersion.getVersion())
         );
 
-        assertCommandResult(selectedVersion, false);
+        assertCommandResult(selectedVersion, false, null);
     }
 
     @Test
@@ -59,7 +63,7 @@ public class PicketLinkSetupCommandTestCase extends AbstractTestCase {
         Coordinate selectedVersion = null;
 
         for (Coordinate version : availableVersions) {
-            if (version.equals("2.7.0-SNAPSHOT")) {
+            if (version.getVersion().equals("2.7.0-SNAPSHOT")) {
                 selectedVersion = version;
                 break;
             }
@@ -71,10 +75,21 @@ public class PicketLinkSetupCommandTestCase extends AbstractTestCase {
             executeShellCommand("picketlink-setup --showSnapshots --version " + selectedVersion.getVersion())
         );
 
-        assertCommandResult(selectedVersion, false);
+        assertCommandResult(selectedVersion, false, null);
     }
 
-    public void assertCommandResult(Coordinate expectedVersion, boolean assertDependencies) throws Exception {
+    @Test
+    public void testSetupWithTopLevelPackage() throws Exception {
+        String packageName = "custom";
+
+        assertSuccessfulResult(
+            executeShellCommand("picketlink-setup --topLevelPackage " + packageName)
+        );
+
+        assertCommandResult(getLatestVersion(), false, packageName);
+    }
+
+    public void assertCommandResult(Coordinate expectedVersion, boolean assertDependencies, String packageName) throws Exception {
         Project selectedProject = getSelectedProject();
         PicketLinkFacetBase picketlinkFacet = selectedProject.getFacet(PicketLinkFacetBase.class);
 
@@ -91,5 +106,13 @@ public class PicketLinkSetupCommandTestCase extends AbstractTestCase {
             assertTrue(dependencyFacet.hasEffectiveDependency(MavenDependencies.PICKETLINK_IDM_API_DEPENDENCY));
             assertTrue(dependencyFacet.hasEffectiveDependency(MavenDependencies.PICKETLINK_IDM_IMPL_DEPENDENCY));
         }
+
+        JavaSourceFacet javaFacet = selectedProject.getFacet(JavaSourceFacet.class);
+
+        if (packageName == null) {
+            packageName = DEFAULT_TOP_LEVEL_PACKAGE;
+        }
+
+        assertNotNull(javaFacet.getJavaResource(javaFacet.getBasePackage() + "." + packageName + ".Securityconfiguration"));
     }
 }

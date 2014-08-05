@@ -71,6 +71,12 @@ public class MavenDependencies {
             .setScopeType("provided")
             .setPackaging("jar");
 
+    public static final Dependency PICKETLINK_IDM_SIMPLE_SCHEMA_DEPENDENCY =
+        DependencyBuilder
+            .create("org.picketlink:picketlink-idm-simple-schema")
+            .setScopeType("runtime")
+            .setPackaging("jar");
+
     public static final Dependency[] BASE_MODULE_REQUIRED_DEPENDENCIES = new Dependency[]{PICKETLINK_API_DEPENDENCY, PICKETLINK_IMPL_DEPENDENCY};
     public static final Dependency[] IDM_MODULE_REQUIRED_DEPENDENCIES = new Dependency[]{PICKETLINK_IDM_API_DEPENDENCY, PICKETLINK_IDM_IMPL_DEPENDENCY};
 

@@ -6,11 +6,11 @@ import org.jboss.forge.addon.facets.constraints.FacetConstraint;
 import org.jboss.forge.addon.facets.constraints.FacetConstraints;
 import org.jboss.forge.addon.javaee.jpa.ui.setup.JPASetupWizard;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
+import org.jboss.forge.addon.parser.java.resources.JavaResource;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFactory;
+import org.jboss.forge.addon.projects.dependencies.DependencyInstaller;
 import org.jboss.forge.addon.projects.ui.AbstractProjectCommand;
-import org.jboss.forge.addon.ui.command.CommandExecutionListener;
-import org.jboss.forge.addon.ui.command.UICommand;
 import org.jboss.forge.addon.ui.context.UIBuilder;
 import org.jboss.forge.addon.ui.context.UIContext;
 import org.jboss.forge.addon.ui.context.UIExecutionContext;
@@ -26,8 +26,10 @@ import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
 import org.jboss.forge.addon.ui.wizard.UIWizard;
 import org.picketlink.tools.forge.ConfigurationOperations;
+import org.picketlink.tools.forge.MavenDependencies;
 import org.picketlink.tools.forge.PicketLinkFacetIDM;
 
+import javax.faces.component.UISelectBoolean;
 import javax.inject.Inject;
 
 import static java.util.Arrays.asList;
@@ -50,6 +52,9 @@ public class IdentityManagementSetupWizard extends AbstractProjectCommand implem
     private ProjectFactory projectFactory;
 
     @Inject
+    private DependencyInstaller dependencyInstaller;
+
+    @Inject
     private ConfigurationOperations configurationOperations;
 
     @Inject
@@ -57,8 +62,12 @@ public class IdentityManagementSetupWizard extends AbstractProjectCommand implem
     private UIInput<String> named;
 
     @Inject
-    @WithAttributes(label = "Identity Store Type", required = true, description = "The identity store to be used.")
+    @WithAttributes(label = "Identity Store Type", required = true, description = "The identity store to be used")
     private UISelectOne<IdentityStoreType> identityStoreType;
+
+    @Inject
+    @WithAttributes(label = "Basic Model", required = true, description = "Indicates if the Basic Identity Model should be used or not")
+    private UISelectBoolean basicIdentityModel;
 
     @Override
     public UICommandMetadata getMetadata(UIContext context) {
@@ -80,12 +89,21 @@ public class IdentityManagementSetupWizard extends AbstractProjectCommand implem
     @Override
     public Result execute(UIExecutionContext context) throws Exception {
         Project selectedProject = getSelectedProject(context.getUIContext());
-        Configuration configuration = selectedProject.getFacet(ConfigurationFacet.class).getConfiguration();
+        Configuration configuration = getConfiguration(selectedProject);
 
         configuration.setProperty(ConfigurationOperations.Properties.IDENTITY_CONFIGURATION_NAME.name(), this.named.getValue());
-        configuration.setProperty(ConfigurationOperations.Properties.IDENTITY_STORE_TYPE.name(), this.identityStoreType.getValue().name());
 
-        this.configurationOperations.newConfiguration(selectedProject);
+        IdentityStoreType identityStoreType = this.identityStoreType.getValue();
+
+        if (IdentityStoreType.jpa.equals(identityStoreType)) {
+            this.dependencyInstaller.install(selectedProject, MavenDependencies.PICKETLINK_IDM_SIMPLE_SCHEMA_DEPENDENCY);
+        }
+
+        configuration.setProperty(ConfigurationOperations.Properties.IDENTITY_STORE_TYPE.name(), identityStoreType.name());
+
+        JavaResource javaResource = this.configurationOperations.newConfiguration(selectedProject);
+
+        context.getUIContext().setSelection(javaResource);
 
         return Results.success("PicketLink Identity Management was successfully configured.");
     }
@@ -102,29 +120,18 @@ public class IdentityManagementSetupWizard extends AbstractProjectCommand implem
 
     @Override
     public NavigationResult next(UINavigationContext context) throws Exception {
-        Project project = getSelectedProject(context);
+        Project selectedProject = getSelectedProject(context);
+        String identityStoreType = getConfiguration(selectedProject).getString(ConfigurationOperations.Properties.IDENTITY_STORE_TYPE.name());
 
-        context.getUIContext().addCommandExecutionListener(new CommandExecutionListener() {
-            @Override
-            public void preCommandExecuted(UICommand command, UIExecutionContext context) {
-
-            }
-
-            @Override
-            public void postCommandExecuted(UICommand command, UIExecutionContext context, Result result) {
-                System.out.print(result);
-            }
-
-            @Override
-            public void postCommandFailure(UICommand command, UIExecutionContext context, Throwable failure) {
-
-            }
-        });
-
-        if (project != null && IdentityStoreType.jpa.equals(this.identityStoreType.getValue())) {
+        if (selectedProject != null && identityStoreType!= null && identityStoreType.equals(IdentityStoreType.jpa.name())) {
+            context.getUIContext().getAttributeMap().put("selectedProject", selectedProject);
             return context.navigateTo(JPASetupWizard.class);
         }
 
         return null;
+    }
+
+    private Configuration getConfiguration(Project selectedProject) {
+        return selectedProject.getFacet(ConfigurationFacet.class).getConfiguration();
     }
 }
