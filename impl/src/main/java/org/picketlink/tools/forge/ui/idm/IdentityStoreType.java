@@ -25,6 +25,6 @@ package org.picketlink.tools.forge.ui.idm;
  * @author Pedro Igor
  */
 public enum IdentityStoreType {
-    JPA,
-    FILE
+    jpa,
+    file
 }

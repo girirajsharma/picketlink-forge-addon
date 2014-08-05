@@ -21,16 +21,25 @@
  */
 package org.picketlink.tools.forge;
 
-import org.jboss.forge.addon.projects.ProjectFacet;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.forge.addon.parser.java.resources.JavaResource;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import javax.inject.Inject;
 
 /**
- * <p>Base interface for all facets supported by PicketLink Addon.</p>
- *
  * @author Pedro Igor
  */
-public interface PicketLinkFacet extends ProjectFacet {
+@RunWith(Arquillian.class)
+public class ConfigurationOperationsTestCase extends AbstractTestCase {
 
-    void setPicketLinkVersion(String version);
+    @Inject
+    private ConfigurationOperations configurationOperations;
 
-    String getPicketLinkVersion();
+    @Test
+    public void testNewConfiguration() {
+        JavaResource classSource = this.configurationOperations.newConfiguration(getSelectedProject());
+    }
+
 }

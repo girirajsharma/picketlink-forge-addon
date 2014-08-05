@@ -21,16 +21,14 @@
  */
 package org.picketlink.tools.forge;
 
-import org.jboss.forge.addon.projects.ProjectFacet;
-
 /**
- * <p>Base interface for all facets supported by PicketLink Addon.</p>
- *
  * @author Pedro Igor
  */
-public interface PicketLinkFacet extends ProjectFacet {
+public enum ConfigurationProperties {
 
-    void setPicketLinkVersion(String version);
+    STATELESS_IDENTITY,
+    IDENTITY_CONFIGURATION_NAME,
+    IDENTITY_STORE_TYPE,
+    TOP_LEVEL_PACKAGE_NAME
 
-    String getPicketLinkVersion();
 }

@@ -56,7 +56,7 @@ public abstract class AbstractPicketLinkFacet extends AbstractFacet<Project> imp
 
     @Override
     public void setPicketLinkVersion(String version) {
-        MavenFacet mavenFacet = getFaceted().getFacet(MavenFacet.class);
+        MavenFacet mavenFacet = getMavenFacet();
         Model model = mavenFacet.getModel();
 
         model.getProperties().put(PICKETLINK_VERSION_MAVEN_PROPERTY, version);
@@ -66,8 +66,16 @@ public abstract class AbstractPicketLinkFacet extends AbstractFacet<Project> imp
     }
 
     @Override
-    public boolean supportIdentityManagement() {
-        return true;
+    public String getPicketLinkVersion() {
+        MavenFacet mavenFacet = getMavenFacet();
+        Model model = mavenFacet.getModel();
+        Object version = model.getProperties().get(PICKETLINK_VERSION_MAVEN_PROPERTY);
+
+        if (version == null) {
+            throw new IllegalStateException("No version was set of PicketLink Facet [" + this + "].");
+        }
+
+        return version.toString();
     }
 
     @Override

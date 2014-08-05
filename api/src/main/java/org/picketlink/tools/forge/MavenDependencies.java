@@ -74,11 +74,10 @@ public class MavenDependencies {
     public static final Dependency[] BASE_MODULE_REQUIRED_DEPENDENCIES = new Dependency[]{PICKETLINK_API_DEPENDENCY, PICKETLINK_IMPL_DEPENDENCY};
     public static final Dependency[] IDM_MODULE_REQUIRED_DEPENDENCIES = new Dependency[]{PICKETLINK_IDM_API_DEPENDENCY, PICKETLINK_IDM_IMPL_DEPENDENCY};
 
-
     @Inject
     private DependencyResolver dependencyResolver;
 
-    public List<Coordinate> getAvailableVersions(boolean showSnapshots) {
+    public List<Coordinate> resolveVersions(boolean showSnapshots) {
         DependencyQueryBuilder query = DependencyQueryBuilder.create(PICKETLINK_API_DEPENDENCY.getCoordinate().getGroupId() + ":" + PICKETLINK_API_DEPENDENCY.getCoordinate().getArtifactId());
 
         if (!showSnapshots) {
@@ -86,5 +85,26 @@ public class MavenDependencies {
         }
 
         return this.dependencyResolver.resolveVersions(query);
+    }
+
+    public Coordinate resolveLatestVersion() {
+        List<Coordinate> availableVersions = resolveVersions(false);
+
+        if (!availableVersions.isEmpty()) {
+            Coordinate latestVersion = availableVersions.get(availableVersions.size() - 1);
+
+            for (int i = availableVersions.size() - 1; i >= 0; i--) {
+                String version = availableVersions.get(i).getVersion();
+
+                if (version != null && version.toLowerCase().contains("final")) {
+                    latestVersion = availableVersions.get(i);
+                    break;
+                }
+            }
+
+            return latestVersion;
+        }
+
+        throw new IllegalStateException("Could not resolve latest version from maven repository.");
     }
 }

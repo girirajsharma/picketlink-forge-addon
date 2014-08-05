@@ -21,16 +21,31 @@
  */
 package org.picketlink.tools.forge;
 
-import org.jboss.forge.addon.projects.ProjectFacet;
+import org.jboss.forge.addon.parser.java.resources.JavaResource;
+import org.jboss.forge.addon.projects.Project;
 
 /**
- * <p>Base interface for all facets supported by PicketLink Addon.</p>
- *
  * @author Pedro Igor
  */
-public interface PicketLinkFacet extends ProjectFacet {
+public interface ConfigurationOperations {
 
-    void setPicketLinkVersion(String version);
+    public static final String DEFAULT_TOP_LEVEL_PACKAGE = "security";
 
-    String getPicketLinkVersion();
+    /**
+     * <p>Creates a {@link org.jboss.forge.addon.parser.java.resources.JavaResource} providing all the necessary
+     * configuration.</p>
+     *
+     * @param selectedProject
+     * @return
+     */
+    JavaResource newConfiguration(Project selectedProject);
+
+    public enum Properties {
+
+        STATELESS_IDENTITY,
+        IDENTITY_CONFIGURATION_NAME,
+        IDENTITY_STORE_TYPE,
+        TOP_LEVEL_PACKAGE_NAME
+
+    }
 }
