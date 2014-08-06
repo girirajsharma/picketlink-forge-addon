@@ -48,6 +48,10 @@
       <artifactId>picketlink-forge-addon-spi</artifactId>
       <classifier>forge-addon</classifier>
     </dependency>
+      <dependency>
+      <groupId>org.picketlink</groupId>
+      <artifactId>picketlink-idm-simple-schema</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

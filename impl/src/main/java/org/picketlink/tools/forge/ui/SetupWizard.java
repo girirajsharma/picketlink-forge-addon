@@ -34,7 +34,7 @@ import java.io.FileNotFoundException;
 import java.util.concurrent.Callable;
 
 import static org.picketlink.tools.forge.ConfigurationOperations.DEFAULT_TOP_LEVEL_PACKAGE;
-import static org.picketlink.tools.forge.ConfigurationOperations.Properties.TOP_LEVEL_PACKAGE_NAME;
+import static org.picketlink.tools.forge.ConfigurationOperations.Properties.PICKETLINK_TOP_LEVEL_PACKAGE_NAME;
 
 /**
  * <p>This command is used to properly configure the project before any other command is executed. It provides all the necessary
@@ -90,7 +90,7 @@ public class SetupWizard extends AbstractProjectCommand implements UIWizard {
 
         Configuration configuration = selectedProject.getFacet(ConfigurationFacet.class).getConfiguration();
 
-        configuration.setProperty(TOP_LEVEL_PACKAGE_NAME.name(), this.topLevelPackage.getValue());
+        configuration.setProperty(PICKETLINK_TOP_LEVEL_PACKAGE_NAME.name(), this.topLevelPackage.getValue());
 
         if (this.facetFactory.install(selectedProject, selectedModule)) {
             createDefaultConfiguration(context, selectedProject);

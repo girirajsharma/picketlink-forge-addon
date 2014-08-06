@@ -83,6 +83,8 @@ public abstract class AbstractTestCase {
     public void onBefore() throws Exception {
         this.selectedProject = this.projectFactory.createTempProject(Arrays.<Class<? extends ProjectFacet>>asList(JavaSourceFacet.class));
 
+        JavaSourceFacet javaFacet = this.selectedProject.getFacet(JavaSourceFacet.class);
+
         this.shellTest.getShell().setCurrentResource(this.selectedProject.getRoot());
 
         Result result = this.shellTest.execute(("picketlink-setup"), 10, TimeUnit.SECONDS);

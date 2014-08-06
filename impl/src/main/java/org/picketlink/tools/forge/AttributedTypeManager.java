@@ -21,40 +21,35 @@
  */
 package org.picketlink.tools.forge;
 
-import org.jboss.forge.addon.parser.java.resources.JavaResource;
 import org.jboss.forge.addon.projects.Project;
+import org.picketlink.idm.model.AttributedType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
+ * <p>Provides methods to manipulate project's persistence unit in order to properly configure the JPA Identity Store.</p>
+ *
  * @author Pedro Igor
  */
-public interface ConfigurationOperations {
+public class AttributedTypeManager {
 
-    public static final String DEFAULT_TOP_LEVEL_PACKAGE = "security";
+    public List<String> getAttributedTypes(Project selectedProject) {
+        final ArrayList<String> attributedTypes = new ArrayList<>();
 
-    /**
-     * <p>Creates a {@link org.jboss.forge.addon.parser.java.resources.JavaResource} providing all the necessary
-     * configuration.</p>
-     *
-     * @param selectedProject
-     * @return
-     */
-    JavaResource newConfiguration(Project selectedProject);
+        return attributedTypes;
+    }
 
-    /**
-     * <p>Creates a {@link org.jboss.forge.addon.parser.java.resources.JavaResource} for a resource producer.</p>
-     *
-     * @param selectedProject
-     * @return
-     */
-    JavaResource newResourceProducer(Project selectedProject);
+    private boolean isAttributedType(Class<?> cls) {
+        while (!cls.equals(Object.class)) {
+            if (AttributedType.class.isAssignableFrom(cls)) {
+                return true;
+            }
 
-    public enum Properties {
+            // Check the superclass
+            cls = cls.getSuperclass();
+        }
 
-        PICKETLINK_STATELESS_IDENTITY,
-        PICKETLINK_IDENTITY_CONFIGURATION_NAME,
-        PICKETLINK_IDENTITY_STORE_TYPE,
-        PICKETLINK_IDENTITY_BASIC_MODEL,
-        PICKETLINK_TOP_LEVEL_PACKAGE_NAME
-
+        return false;
     }
 }

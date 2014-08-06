@@ -21,40 +21,11 @@
  */
 package org.picketlink.tools.forge;
 
-import org.jboss.forge.addon.parser.java.resources.JavaResource;
-import org.jboss.forge.addon.projects.Project;
+import org.picketlink.idm.model.basic.User;
 
 /**
  * @author Pedro Igor
  */
-public interface ConfigurationOperations {
+public class MyUser extends User {
 
-    public static final String DEFAULT_TOP_LEVEL_PACKAGE = "security";
-
-    /**
-     * <p>Creates a {@link org.jboss.forge.addon.parser.java.resources.JavaResource} providing all the necessary
-     * configuration.</p>
-     *
-     * @param selectedProject
-     * @return
-     */
-    JavaResource newConfiguration(Project selectedProject);
-
-    /**
-     * <p>Creates a {@link org.jboss.forge.addon.parser.java.resources.JavaResource} for a resource producer.</p>
-     *
-     * @param selectedProject
-     * @return
-     */
-    JavaResource newResourceProducer(Project selectedProject);
-
-    public enum Properties {
-
-        PICKETLINK_STATELESS_IDENTITY,
-        PICKETLINK_IDENTITY_CONFIGURATION_NAME,
-        PICKETLINK_IDENTITY_STORE_TYPE,
-        PICKETLINK_IDENTITY_BASIC_MODEL,
-        PICKETLINK_TOP_LEVEL_PACKAGE_NAME
-
-    }
 }

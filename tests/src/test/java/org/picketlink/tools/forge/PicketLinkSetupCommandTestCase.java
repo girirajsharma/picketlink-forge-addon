@@ -114,5 +114,6 @@ public class PicketLinkSetupCommandTestCase extends AbstractTestCase {
         }
 
         assertNotNull(javaFacet.getJavaResource(javaFacet.getBasePackage() + "." + packageName + ".Securityconfiguration"));
+        assertNotNull(javaFacet.getJavaResource(javaFacet.getBasePackage() + "." + packageName + ".Resources"));
     }
 }
