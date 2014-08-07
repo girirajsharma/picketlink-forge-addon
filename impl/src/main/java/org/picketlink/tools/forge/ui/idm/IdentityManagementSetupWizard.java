@@ -110,7 +110,7 @@ public class IdentityManagementSetupWizard extends AbstractProjectCommand implem
         this.configurationOperations.newConfiguration(selectedProject);
         this.configurationOperations.newResourceProducer(selectedProject);
 
-        return Results.success("PicketLink Identity Management was successfully configured.");
+        return Results.success("PicketLink Identity Management has been installed.");
     }
 
     @Override
@@ -125,11 +125,7 @@ public class IdentityManagementSetupWizard extends AbstractProjectCommand implem
 
     @Override
     public NavigationResult next(UINavigationContext context) throws Exception {
-        Project selectedProject = getSelectedProject(context);
-        String identityStoreType = getConfiguration(selectedProject).getString(ConfigurationOperations.Properties.PICKETLINK_IDENTITY_STORE_TYPE
-            .name());
-
-        if (selectedProject != null && identityStoreType!= null && identityStoreType.equals(IdentityStoreType.jpa.name())) {
+        if (IdentityStoreType.jpa.equals(identityStoreType.getValue())) {
             return context.navigateTo(JPASetupWizard.class, JPAIdentityStoreSetupCommand.class);
         }
 

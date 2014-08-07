@@ -23,6 +23,7 @@ package org.picketlink.tools.forge;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
+import org.jboss.forge.addon.parser.java.resources.JavaResource;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFacet;
 import org.jboss.forge.addon.projects.ProjectFactory;
@@ -38,6 +39,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import javax.inject.Inject;
+import java.io.FileInputStream;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -63,6 +65,7 @@ public abstract class AbstractTestCase {
         @AddonDependency(name = "org.jboss.forge.addon:shell-test-harness"),
         @AddonDependency(name = "org.jboss.forge.addon:projects"),
         @AddonDependency(name = "org.jboss.forge.addon:maven"),
+        @AddonDependency(name = "org.jboss.forge.addon:javaee"),
         @AddonDependency(name = "org.jboss.forge.furnace.container:cdi"),
         @AddonDependency(name = "org.picketlink.tools.forge:picketlink-forge-addon")
     })
@@ -70,11 +73,13 @@ public abstract class AbstractTestCase {
         return ShrinkWrap
             .create(ForgeArchive.class)
             .addClass(AbstractTestCase.class)
+            .addClass(MyUser.class)
             .addBeansXML()
             .addAsAddonDependencies(
                 AddonDependencyEntry.create("org.jboss.forge.addon:shell-test-harness"),
                 AddonDependencyEntry.create("org.jboss.forge.addon:projects"),
                 AddonDependencyEntry.create("org.jboss.forge.addon:maven"),
+                AddonDependencyEntry.create("org.jboss.forge.addon:javaee"),
                 AddonDependencyEntry.create("org.jboss.forge.furnace.container:cdi"),
                 AddonDependencyEntry.create("org.picketlink.tools.forge:picketlink-forge-addon"));
     }
@@ -84,6 +89,11 @@ public abstract class AbstractTestCase {
         this.selectedProject = this.projectFactory.createTempProject(Arrays.<Class<? extends ProjectFacet>>asList(JavaSourceFacet.class));
 
         JavaSourceFacet javaFacet = this.selectedProject.getFacet(JavaSourceFacet.class);
+
+        JavaResource childOfType = javaFacet.getBasePackageDirectory()
+            .getChildOfType(JavaResource.class, MyUser.class.getSimpleName() + ".java");
+
+        childOfType.setContents(new FileInputStream("/pedroigor/java/workspace/jboss/picketlink/picketlink-forge-addon/tests/src/test/java/org/picketlink/tools/forge/MyUser.java"));
 
         this.shellTest.getShell().setCurrentResource(this.selectedProject.getRoot());
 

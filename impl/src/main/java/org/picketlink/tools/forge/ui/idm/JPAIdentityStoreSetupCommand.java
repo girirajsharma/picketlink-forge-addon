@@ -53,7 +53,7 @@ public class JPAIdentityStoreSetupCommand extends AbstractProjectCommand impleme
     @Override
     public Result execute(UIExecutionContext context) throws Exception {
         this.persistenceManager.configure(getSelectedProject(context));
-        return Results.success("JPA Identity Store successfully configured.");
+        return Results.success("JPA Identity Store has been configured.");
     }
 
     @Override

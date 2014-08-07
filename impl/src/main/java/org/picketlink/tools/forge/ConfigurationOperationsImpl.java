@@ -29,6 +29,9 @@ import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.MethodSource;
+import org.picketlink.annotations.PicketLink;
+import org.picketlink.authentication.web.HTTPAuthenticationScheme;
 import org.picketlink.config.SecurityConfigurationBuilder;
 import org.picketlink.event.SecurityConfigurationEvent;
 import org.picketlink.tools.forge.ui.idm.IdentityStoreType;
@@ -38,8 +41,9 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.List;
+import java.util.Set;
 
+import static org.picketlink.authentication.web.AuthenticationFilter.AuthType;
 import static org.picketlink.tools.forge.ConfigurationOperations.Properties.PICKETLINK_TOP_LEVEL_PACKAGE_NAME;
 import static org.picketlink.tools.forge.ConfigurationProperties.IDENTITY_CONFIGURATION_NAME;
 import static org.picketlink.tools.forge.ConfigurationProperties.IDENTITY_STORE_TYPE;
@@ -58,64 +62,20 @@ public class ConfigurationOperationsImpl implements ConfigurationOperations {
 
     public JavaResource newConfiguration(Project selectedProject) {
         StringBuilder methodBodyBuilder = new StringBuilder();
+        StringBuilder configuration = createIdentityBeanConfiguration(selectedProject);
+        StringBuilder identityManagementConfiguration = createIdentityManagementConfiguration(selectedProject);
 
-        if (requiresConfiguration(selectedProject)) {
-            Configuration configuration = getConfiguration(selectedProject);
+        configuration.append(identityManagementConfiguration.toString());
 
+        if (configuration.length() > 0) {
             methodBodyBuilder
                 .append("SecurityConfigurationBuilder builder = event.getBuilder();\n")
                 .append("\n")
-                .append("builder\n");
-
-            boolean statelessIdentity = configuration.getBoolean(STATELESS_IDENTITY.name(), false);
-
-            if (statelessIdentity) {
-                methodBodyBuilder
-                    .append("\t.identity()\n")
-                    .append("\t\t.stateless()\n");
-            }
-
-            List<String> attributedTypes = this.attributedTypeManager.getAttributedTypes(selectedProject);
-
-            if (attributedTypes.isEmpty()) {
-                methodBodyBuilder.append(";");
-            } else {
-                String identityConfigurationName = configuration.getString(IDENTITY_CONFIGURATION_NAME.name(), "default.config");
-                String identityStoreType = configuration.getString(IDENTITY_STORE_TYPE.name(), IdentityStoreType.jpa.name());
-
-                methodBodyBuilder
-                    .append("\t.idmConfig()\n")
-                    .append("\t\t.named(\"").append(identityConfigurationName).append("\")\n")
-                    .append("\t\t\t.stores()\n")
-                    .append("\t\t\t\t.").append(identityStoreType).append("()\n");
-
-                methodBodyBuilder.append("\t\t\t\t\t.supportType(");
-
-                for (int i = 0; i < attributedTypes.size(); i++) {
-                    if (i > 0) {
-                        methodBodyBuilder.append(",\n");
-                    }
-
-                    methodBodyBuilder.append(attributedTypes.get(i));
-                }
-
-                methodBodyBuilder.append("\t\t\t\t\t)\n");
-
-                methodBodyBuilder.append("\t\t\t\t\t.supportAllFeatures();");
-            }
-
-            return newConfiguration(selectedProject, methodBodyBuilder);
+                .append("builder\n")
+                .append(configuration.toString());
         }
 
-        return null;
-    }
-
-    private boolean requiresConfiguration(Project selectedProject) {
-        Configuration configuration = getConfiguration(selectedProject);
-        boolean statelessIdentity = configuration.getBoolean(STATELESS_IDENTITY.name(), false);
-        List<String> attributedTypes = this.attributedTypeManager.getAttributedTypes(selectedProject);
-
-        return statelessIdentity || !attributedTypes.isEmpty();
+        return newConfiguration(selectedProject, methodBodyBuilder);
     }
 
     @Override
@@ -156,6 +116,56 @@ public class ConfigurationOperationsImpl implements ConfigurationOperations {
         return javaResource;
     }
 
+    private StringBuilder createIdentityBeanConfiguration(Project selectedProject) {
+        StringBuilder config = new StringBuilder();
+        boolean statelessIdentity = getConfiguration(selectedProject).getBoolean(STATELESS_IDENTITY.name(), false);
+
+        if (statelessIdentity) {
+            config
+                .append("\t.identity()\n")
+                .append("\t\t.stateless()\n");
+        }
+
+        return config;
+    }
+
+    private StringBuilder createIdentityManagementConfiguration(Project selectedProject) {
+        StringBuilder config = new StringBuilder();
+        Configuration configuration = getConfiguration(selectedProject);
+        String identityConfigurationName = configuration.getString(IDENTITY_CONFIGURATION_NAME.name(), "default.config");
+        String identityStoreType = configuration.getString(IDENTITY_STORE_TYPE.name(), IdentityStoreType.jpa.name());
+
+        Set<String> attributedTypes = this.attributedTypeManager.getAttributedTypes(selectedProject);
+
+        if (!attributedTypes.isEmpty()) {
+            config
+                .append("\t.idmConfig()\n")
+                .append("\t\t.named(\"").append(identityConfigurationName).append("\")\n")
+                .append("\t\t\t.stores()\n")
+                .append("\t\t\t\t.").append(identityStoreType).append("()\n");
+
+            config.append("\t\t\t\t\t.supportType(");
+
+            int i = 0;
+
+            for (String attributedTypeName : attributedTypes) {
+                if (i > 0) {
+                    config.append(",\n");
+                }
+
+                config.append(attributedTypeName).append(".class");
+
+                i++;
+            }
+
+            config.append("\t\t\t\t\t)\n");
+
+            config.append("\t\t\t\t\t.supportAllFeatures();");
+        }
+
+        return config;
+    }
+
     private JavaResource newConfiguration(Project selectedProject, StringBuilder observerMethodBody) {
         StringBuilder methodBody = observerMethodBody;
 
@@ -165,32 +175,63 @@ public class ConfigurationOperationsImpl implements ConfigurationOperations {
 
         JavaSourceFacet javaFacet = selectedProject.getFacet(JavaSourceFacet.class);
 
-        String topLevelPackageName = getConfiguration(selectedProject).getString(PICKETLINK_TOP_LEVEL_PACKAGE_NAME.name(), DEFAULT_TOP_LEVEL_PACKAGE);
-        JavaResource javaResource = javaFacet
-            .getBasePackageDirectory()
-            .getOrCreateChildDirectory(topLevelPackageName)
-            .getChildOfType(JavaResource.class, SECURITY_CONFIGURATION_CLASS_NAME + ".java");
-        String packageName = javaFacet.calculatePackage(javaResource);
+        Configuration configuration = getConfiguration(selectedProject);
 
-        JavaClassSource javaSource = Roaster.create(JavaClassSource.class)
-            .setName(SECURITY_CONFIGURATION_CLASS_NAME)
-            .setPublic()
-            .setPackage(packageName);
+        String authenticationScheme = configuration.getString(Properties.PICKETLINK_SECURITY_FILTER_AUTHC_SCHEME.name());
 
-        javaSource.addImport(SecurityConfigurationBuilder.class);
+        if (authenticationScheme != null || methodBody.length() > 0) {
+            String topLevelPackageName = configuration.getString(PICKETLINK_TOP_LEVEL_PACKAGE_NAME.name(), DEFAULT_TOP_LEVEL_PACKAGE);
+            JavaResource javaResource = javaFacet
+                .getBasePackageDirectory()
+                .getOrCreateChildDirectory(topLevelPackageName)
+                .getChildOfType(JavaResource.class, SECURITY_CONFIGURATION_CLASS_NAME + ".java");
+            String packageName = javaFacet.calculatePackage(javaResource);
 
-        javaSource
-            .addMethod()
-                .setName("onInit")
+            JavaClassSource javaSource = Roaster.create(JavaClassSource.class)
+                .setName(SECURITY_CONFIGURATION_CLASS_NAME)
                 .setPublic()
-                .setReturnTypeVoid()
-                .setBody(methodBody.toString())
-                .addParameter(SecurityConfigurationEvent.class, "event")
+                .setPackage(packageName);
+
+            if (authenticationScheme != null) {
+                javaSource.addImport(HTTPAuthenticationScheme.class);
+                javaSource.addImport(PicketLink.class);
+
+                javaSource
+                    .addField()
+                    .setPrivate()
+                    .setName("authenticationScheme")
+                    .setType(AuthType.valueOf(authenticationScheme).getSchemeType())
+                    .addAnnotation(Inject.class);
+
+                MethodSource<JavaClassSource> produceAuthenticationSchemeMethod = javaSource
+                    .addMethod()
+                    .setPublic()
+                    .setReturnType(HTTPAuthenticationScheme.class)
+                    .setName("produceAuthenticationScheme")
+                    .setBody("return authenticationScheme;");
+
+                produceAuthenticationSchemeMethod.addAnnotation(Produces.class);
+                produceAuthenticationSchemeMethod.addAnnotation(PicketLink.class);
+
+            }
+
+            if (methodBody.length() > 0) {
+                javaSource.addImport(SecurityConfigurationBuilder.class);
+
+                javaSource
+                    .addMethod()
+                    .setName("onInit")
+                    .setPublic()
+                    .setReturnTypeVoid()
+                    .setBody(methodBody.toString())
+                    .addParameter(SecurityConfigurationEvent.class, "event")
                     .addAnnotation(Observes.class);
+            }
 
-        javaResource.setContents(javaSource);
+            javaResource.setContents(javaSource);
+        }
 
-        return javaResource;
+        return null;
     }
 
     private Configuration getConfiguration(Project selectedProject) {

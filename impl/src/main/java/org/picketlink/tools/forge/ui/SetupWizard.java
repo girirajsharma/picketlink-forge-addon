@@ -94,7 +94,10 @@ public class SetupWizard extends AbstractProjectCommand implements UIWizard {
 
         if (this.facetFactory.install(selectedProject, selectedModule)) {
             createDefaultConfiguration(context, selectedProject);
-            return Results.success("PicketLink was successfully configured.");
+
+            context.getUIContext().setSelection(selectedProject.getRoot());
+
+            return Results.success("PicketLink has been installed.");
         }
 
         return Results.fail("Could not install PicketLink.");

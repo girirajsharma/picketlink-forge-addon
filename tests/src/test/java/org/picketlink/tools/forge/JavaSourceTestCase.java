@@ -21,15 +21,13 @@
  */
 package org.picketlink.tools.forge;
 
-import org.jboss.forge.roaster.Roaster;
-import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.junit.Test;
-import org.picketlink.event.SecurityConfigurationEvent;
+import org.picketlink.idm.model.AttributedType;
 
-import javax.enterprise.event.Observes;
+import java.net.URL;
+import java.net.URLClassLoader;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Pedro Igor
@@ -37,38 +35,27 @@ import static org.junit.Assert.assertFalse;
 public class JavaSourceTestCase {
 
     @Test
-    public void testSecurityConfiguration() {
-        JavaClassSource javaClass = Roaster.create(JavaClassSource.class)
-            .setName("SecurityConfiguration")
-            .setPublic();
+    public void testSecurityConfiguration() throws Exception {
+        URL url = new URL("jar:file:/home/pedroigor/.m2/repository/org/picketlink/forge/app/picketlink-forge-app/1.0.0-SNAPSHOT/picketlink-forge-app-1.0.0-SNAPSHOT.war!/WEB-INF/classes/");
+        URLClassLoader classLoader = new URLClassLoader(new URL[]{url});
 
-        javaClass
-            .addMethod()
-            .setName("onInit")
-            .setPublic()
-            .setReturnTypeVoid()
-            .setBody("if (true) {}")
-            .addParameter(SecurityConfigurationEvent.class, "event")
-            .addAnnotation(Observes.class);
+        Class<?> aClass = classLoader.loadClass("org.picketlink.forge.app.security.model.MyUser");
 
-        assertFalse(javaClass.hasSyntaxErrors());
-
-        assertEquals("\n" +
-            "import org.picketlink.event.SecurityConfigurationEvent;\n" +
-            "import javax.enterprise.event.Observes;\n" +
-            "\n" +
-            "public class SecurityConfiguration\n" +
-            "{\n" +
-            "\n" +
-            "   public void onInit(@Observes SecurityConfigurationEvent event)\n" +
-            "   {\n" +
-            "      if (true)\n" +
-            "      {\n" +
-            "      }\n" +
-            "   }\n" +
-            "}", javaClass.toString());
-
-        System.out.println(javaClass.toString());
+        assertTrue(isAttributedType(aClass));
     }
+
+    private boolean isAttributedType(Class<?> cls) {
+        while (!cls.equals(Object.class)) {
+            if (AttributedType.class.isAssignableFrom(cls)) {
+                return true;
+            }
+
+            // Check the superclass
+            cls = cls.getSuperclass();
+        }
+
+        return false;
+    }
+
 
 }
