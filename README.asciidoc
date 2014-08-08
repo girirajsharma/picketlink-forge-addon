@@ -65,20 +65,24 @@ Once you've successfully cloned the repository, navigate to the newly created di
         
 Make sure Forge is properly installed and configured in your environment. If so, you should be able to start Forge by typing
 
+[source,cmd]
         forge
         
 IMPORTANT: For more details about how to install Forge, follow the instructions https://github.com/forge/core/blob/master/README.asciidoc[here].
         
 Once you're in Forge Shell perform a build as follows:
 
+[source,cmd]
         build --notest clean install
         
 After that, enter the *addon* module 
 
+[source,cmd]
         cd addon
         
 And finally install the addon into your Forge installation
 
+[source,cmd]
         addon-build-and-install
         
 If everything was fine, you should be able to see the following command in Forge Shell
@@ -118,7 +122,7 @@ Project Templates ::
    and can help you to build your own project.
 
 +
-[options="header,asciidoc"]
+[cols="1a,2", options="header"]
 |===
 |Command|Description
 
