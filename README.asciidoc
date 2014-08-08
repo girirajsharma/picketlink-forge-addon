@@ -60,6 +60,7 @@ If you want to use the latest changes for this addon, please clone the https://g
         
 Once you've successfully cloned the repository, navigate to the newly created directory:
 
+[source,cmd]
         cd picketlink-forge-addon
         
 Make sure Forge is properly installed and configured in your environment. If so, you should be able to start Forge by typing
