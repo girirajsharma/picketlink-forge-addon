@@ -52,23 +52,9 @@ More details on http://picketlink.org[picketlink.org].
 
 |===
 
-== Setup
+== Building Sources and Forge Installation
 
-This Addon requires the following installation steps.
-
-=== Add configuration to pom.xml 
-
-To use this addon, you must add it as a dependency in the *pom.xml* of your `forge-addon` classified artifact:
-
-[source,xml]
-----
-<dependency>
-   <groupId>org.jboss.forge.addon</groupId>
-   <artifactId>javaee</artifactId>
-   <classifier>forge-addon</classifier>
-   <version>${version}</version>
-</dependency>
-----
+If you want to use the latest changes for this addon, please clone the https://github.com/picketlink/picketlink-forge-addon/[PicketLink Forge Addon Repository] in GitHub
 
 == Features
 
