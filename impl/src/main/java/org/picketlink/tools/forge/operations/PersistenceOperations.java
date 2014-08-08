@@ -28,6 +28,7 @@ import org.jboss.forge.addon.dependencies.builder.DependencyBuilder;
 import org.jboss.forge.addon.dependencies.builder.DependencyQueryBuilder;
 import org.jboss.forge.addon.javaee.jpa.JPAFacet;
 import org.jboss.forge.addon.maven.projects.MavenFacet;
+import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.facets.DependencyFacet;
 import org.jboss.forge.addon.projects.facets.MetadataFacet;
@@ -67,24 +68,20 @@ import static java.util.Collections.emptySet;
 public class PersistenceOperations {
 
     private static final String JPA_ANNOTATION_PACKAGE = "org.picketlink.idm.jpa.annotations";
-    private static final String BASIC_IDENTITY_ENTITY_MODEL_PACKAGE_NAME = "org.picketlink.idm.jpa.model.sample.simple";
 
     @Inject
     private DependencyResolver dependencyResolver;
-    private Set<String> basicModelEntities;
 
     public Set<String> configure(final Project selectedProject) {
         URLClassLoader classLoader = null;
+        Set<String> entities = emptySet();
 
         try {
             classLoader = getProjectClassLoader(selectedProject);
             MavenFacet mavenFacet = selectedProject.getFacet(MavenFacet.class);
-            Set<String> projectEntities = findEntityTypes(selectedProject, getProjectArtifact(selectedProject), getPackageRootPath(mavenFacet), classLoader);
+            JavaSourceFacet javaSource = selectedProject.getFacet(JavaSourceFacet.class);
+            Set<String> protectEntities = findEntityTypes(getProjectArtifact(selectedProject), getPackageRootPath(mavenFacet), javaSource.getBasePackage(), classLoader);
             Set<String> basicIdentityModelEntityTypes = getBasicIdentityModelEntityTypes(selectedProject, classLoader);
-
-            if (projectEntities.isEmpty()) {
-                projectEntities = basicIdentityModelEntityTypes;
-            }
 
             JPAFacet jpaFacet = selectedProject.getFacet(JPAFacet.class);
             PersistenceCommonDescriptor persistenceUnitConfig = (PersistenceCommonDescriptor) jpaFacet.getConfig();
@@ -93,27 +90,28 @@ public class PersistenceOperations {
             if (!persistenceUnits.isEmpty()) {
                 PersistenceUnitCommon persistenceUnit = persistenceUnits.iterator().next();
 
-                for (String entityType : projectEntities) {
-                    addEntityClass(persistenceUnit, entityType);
-                }
-
-                ArrayList classes = new ArrayList(persistenceUnit.getAllClazz());
+                List allClazz = new ArrayList(persistenceUnit.getAllClazz());
 
                 persistenceUnit.removeAllClazz();
 
-                for (Object entityClass : classes) {
-                    if (basicIdentityModelEntityTypes.contains(entityClass.toString())  && !projectEntities.isEmpty()) {
-                        continue;
+                if (protectEntities.isEmpty()) {
+                    persistenceUnit.clazz(basicIdentityModelEntityTypes.toArray(new String[basicIdentityModelEntityTypes.size()]));
+                } else {
+                    persistenceUnit.clazz(protectEntities.toArray(new String[protectEntities.size()]));
+                }
+
+                for (Object entityType : allClazz) {
+                    if (!persistenceUnit.getAllClazz().contains(entityType)) {
+                        if (basicIdentityModelEntityTypes.contains(entityType) && !protectEntities.isEmpty()) {
+                            continue;
+                        }
+
+                        persistenceUnit.clazz(entityType.toString());
                     }
-
-                    System.out.println(entityClass.toString());
-
-                    addEntityClass(persistenceUnit, entityClass.toString());
                 }
             }
 
             jpaFacet.saveConfig(persistenceUnitConfig);
-
         } catch (Exception e) {
             throw new RuntimeException("Could not load type.", e);
         } finally {
@@ -125,7 +123,7 @@ public class PersistenceOperations {
             }
         }
 
-        return emptySet();
+        return entities;
     }
 
     public Set<String> getBasicIdentityModelEntityTypes(Project selectedProject, URLClassLoader classLoader) {
@@ -137,14 +135,16 @@ public class PersistenceOperations {
                 .getCoordinate());
         Dependency dependency = this.dependencyResolver.resolveArtifact(query);
 
-        return findEntityTypes(selectedProject, dependency.getArtifact(), File.separator, classLoader);
+        return findEntityTypes(dependency.getArtifact(), File.separator, "", classLoader);
     }
 
-    private Set<String> findEntityTypes(final Project selectedProject, Resource<?> projectArtifact, final String packageRootPath, final ClassLoader classLoader) {
+    private Set<String> findEntityTypes(Resource<?> projectArtifact, final String packageRootPath, String packageName, final ClassLoader classLoader) {
         final Set<String> entityTypes = new HashSet<>();
 
+        final String packageRootPath2 = packageRootPath + packageName.replace('.', File.separatorChar);
+
         try (FileSystem fs = FileSystems.newFileSystem(Paths.get(projectArtifact.getFullyQualifiedName()), null)) {
-            Files.walkFileTree(fs.getPath(packageRootPath), new SimpleFileVisitor<Path>() {
+            Files.walkFileTree(fs.getPath(packageRootPath2), new SimpleFileVisitor<Path>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                     String filePath = file.toString();
@@ -244,12 +244,6 @@ public class PersistenceOperations {
                 .create(dependency)
                 .setPackaging(packaging)
                 .getCoordinate());
-    }
-
-    private void addEntityClass(PersistenceUnitCommon pu, String entityType) {
-        if (!pu.getAllClazz().contains(entityType)) {
-            pu.clazz(entityType);
-        }
     }
 
     private boolean isMappedEntity(Class<?> cls) {
