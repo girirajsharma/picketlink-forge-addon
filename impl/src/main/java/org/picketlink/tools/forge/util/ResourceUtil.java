@@ -31,10 +31,16 @@ import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.addon.resource.FileResource;
 import org.picketlink.tools.forge.ConfigurationOperations;
 
+import java.io.File;
+
 /**
  * @author Pedro Igor
  */
 public class ResourceUtil {
+
+    public static JavaResource createSecurityInitializerifNecessary(Project selectedProject) {
+        return createJavaResourceIfNecessary(selectedProject, "SecurityInitializer.java", "/scaffold/common/classes/SecurityInitializer.java");
+    }
 
     public static void createWebResourceIfNecessary(Project selectedProject, String name, String resourcePath) {
         WebResourcesFacet resourcesFacet = selectedProject.getFacet(WebResourcesFacet.class);
@@ -46,19 +52,29 @@ public class ResourceUtil {
         }
     }
 
-    public static void createJavaResourceIfNecessary(Project selectedProject, String name, String resourcePath) {
+    public static JavaResource createJavaResourceIfNecessary(Project selectedProject, String name, String resourcePath) {
         Configuration configuration = selectedProject.getFacet(ConfigurationFacet.class).getConfiguration();
         String securityPackageName = configuration.getString(ConfigurationOperations.Properties.PICKETLINK_TOP_LEVEL_PACKAGE_NAME.name());
         JavaSourceFacet javaFacet = selectedProject.getFacet(JavaSourceFacet.class);
-        DirectoryResource basePackageDirectory = javaFacet.getBasePackageDirectory();
-        JavaResource javaResource = basePackageDirectory.getOrCreateChildDirectory(securityPackageName).getChildOfType(JavaResource.class, name);
+
+        return createJavaResourceIfNecessary(selectedProject, javaFacet.getBasePackage() + "." + securityPackageName, name, resourcePath);
+    }
+
+    public static JavaResource createJavaResourceIfNecessary(Project selectedProject, String packageName, String name, String resourcePath) {
+        Configuration configuration = selectedProject.getFacet(ConfigurationFacet.class).getConfiguration();
+        String securityPackageName = configuration.getString(ConfigurationOperations.Properties.PICKETLINK_TOP_LEVEL_PACKAGE_NAME.name());
+        JavaSourceFacet javaFacet = selectedProject.getFacet(JavaSourceFacet.class);
+        DirectoryResource basePackageDirectory = javaFacet.getSourceDirectory().getOrCreateChildDirectory(packageName.replace('.', File.separatorChar));
+        JavaResource javaResource = basePackageDirectory.getChildOfType(JavaResource.class, name);
 
         if (!javaResource.exists()) {
             javaResource.createNewFile();
             javaResource.setContents(ResourceUtil.class.getResourceAsStream(resourcePath));
             javaResource.setContents(javaResource.getContents()
-                .replaceAll("__package_name", javaFacet.getBasePackage() + "." + securityPackageName));
+                .replaceAll("__package_name", packageName));
         }
+
+        return javaResource;
     }
 
 }

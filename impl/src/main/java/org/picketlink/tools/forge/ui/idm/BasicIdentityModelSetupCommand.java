@@ -19,13 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.picketlink.tools.forge.ui.http;
+package org.picketlink.tools.forge.ui.idm;
 
 import org.jboss.forge.addon.configuration.Configuration;
 import org.jboss.forge.addon.configuration.facets.ConfigurationFacet;
-import org.jboss.forge.addon.javaee.servlet.ServletFacet;
+import org.jboss.forge.addon.facets.constraints.FacetConstraint;
+import org.jboss.forge.addon.javaee.ejb.ui.EJBSetupWizard;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFactory;
+import org.jboss.forge.addon.projects.dependencies.DependencyInstaller;
 import org.jboss.forge.addon.projects.ui.AbstractProjectCommand;
 import org.jboss.forge.addon.ui.context.UIBuilder;
 import org.jboss.forge.addon.ui.context.UIContext;
@@ -39,69 +41,62 @@ import org.jboss.forge.addon.ui.result.Result;
 import org.jboss.forge.addon.ui.result.Results;
 import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
-import org.jboss.forge.addon.ui.wizard.UIWizardStep;
-import org.jboss.shrinkwrap.descriptor.api.webapp30.WebAppDescriptor;
-import org.picketlink.authentication.web.AuthenticationFilter;
+import org.jboss.forge.addon.ui.wizard.UIWizard;
 import org.picketlink.tools.forge.ConfigurationOperations;
+import org.picketlink.tools.forge.MavenDependencies;
+import org.picketlink.tools.forge.PicketLinkIDMFacet;
 
 import javax.inject.Inject;
+
+import static org.picketlink.tools.forge.util.ResourceUtil.createSecurityInitializerifNecessary;
 
 /**
  * @author Pedro Igor
  */
-public class BasicAuthenticationSchemeWizardStep extends AbstractProjectCommand implements UIWizardStep{
+@FacetConstraint(value = PicketLinkIDMFacet.class)
+public class BasicIdentityModelSetupCommand extends AbstractProjectCommand implements UIWizard {
 
     @Inject
     private ProjectFactory projectFactory;
 
     @Inject
-    @WithAttributes(label = "Realm Name", required = true, description = "The realm name", defaultValue = "PicketLink Realm")
-    private UIInput<String> realmName;
+    private DependencyInstaller dependencyInstaller;
+
+    @Inject
+    @WithAttributes(label = "Creates a Default User", required = true, description = "Indicates if a default user should be created.", defaultValue = "false")
+    private UIInput<Boolean> generateDefaultIdentities;
 
     @Override
     public UICommandMetadata getMetadata(UIContext context) {
-        return Metadata.forCommand(SecurityFilterSetupWizard.class)
-            .name("PicketLink HTTP Basic Authentication: Setup")
-            .description("Enables HTTP Basic Authentication to your project.")
+        return Metadata.forCommand(IdentityManagementSetupWizard.class)
+            .name("PicketLink IDM Basic Identity Model: Setup")
+            .description("Configure the Basic Identity Model to your PicketLink IDM project.")
             .category(Categories.create("picketlink"));
     }
 
     @Override
     public void initializeUI(UIBuilder builder) throws Exception {
-        builder.add(this.realmName);
+        builder.add(this.generateDefaultIdentities);
     }
 
     @Override
     public Result execute(UIExecutionContext context) throws Exception {
         Project selectedProject = getSelectedProject(context);
+
+        if (this.generateDefaultIdentities.getValue()) {
+            context.getUIContext().setSelection(createSecurityInitializerifNecessary(selectedProject));
+            return Results.success("Default user has been created.");
+        }
+
         Configuration configuration = selectedProject.getFacet(ConfigurationFacet.class).getConfiguration();
-        String securityFilterName = configuration.getString(ConfigurationOperations.Properties.PICKETLINK_SECURITY_FILTER_NAME.name());
-        ServletFacet servletFacet = selectedProject.getFacet(ServletFacet.class);
-        WebAppDescriptor config = (WebAppDescriptor) servletFacet.getConfig();
 
-        config
-            .getOrCreateFilter()
-            .filterName(securityFilterName)
-            .removeAllInitParam()
-            .createInitParam()
-            .paramName("authType")
-            .paramValue(AuthenticationFilter.AuthType.BASIC.name());
+        String identityStoreType = configuration.getString(ConfigurationOperations.Properties.PICKETLINK_IDENTITY_STORE_TYPE.name());
 
-        config
-            .getOrCreateFilter()
-            .filterName(securityFilterName)
-            .createInitParam()
-            .paramName("realmName")
-            .paramValue(this.realmName.getValue());
+        if (IdentityStoreType.jpa.name().equals(identityStoreType)) {
+            this.dependencyInstaller.install(selectedProject, MavenDependencies.PICKETLINK_IDM_SIMPLE_SCHEMA_DEPENDENCY);
+        }
 
-        servletFacet.saveConfig(config);
-
-        return Results.success("HTTP Basic-based Authentication has been installed.");
-    }
-
-    @Override
-    protected ProjectFactory getProjectFactory() {
-        return this.projectFactory;
+        return Results.success();
     }
 
     @Override
@@ -110,7 +105,16 @@ public class BasicAuthenticationSchemeWizardStep extends AbstractProjectCommand 
     }
 
     @Override
+    protected ProjectFactory getProjectFactory() {
+        return this.projectFactory;
+    }
+
+    @Override
     public NavigationResult next(UINavigationContext context) throws Exception {
+        if (this.generateDefaultIdentities.getValue()) {
+            return context.navigateTo(EJBSetupWizard.class);
+        }
+
         return null;
     }
 }

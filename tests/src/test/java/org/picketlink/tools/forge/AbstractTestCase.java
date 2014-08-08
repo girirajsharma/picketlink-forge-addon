@@ -63,10 +63,8 @@ public abstract class AbstractTestCase {
     @Deployment
     @Dependencies({
         @AddonDependency(name = "org.jboss.forge.addon:shell-test-harness"),
-        @AddonDependency(name = "org.jboss.forge.addon:projects"),
         @AddonDependency(name = "org.jboss.forge.addon:maven"),
         @AddonDependency(name = "org.jboss.forge.addon:javaee"),
-        @AddonDependency(name = "org.jboss.forge.furnace.container:cdi"),
         @AddonDependency(name = "org.picketlink.tools.forge:picketlink-forge-addon")
     })
     public static ForgeArchive deploy() {
@@ -97,7 +95,7 @@ public abstract class AbstractTestCase {
 
         this.shellTest.getShell().setCurrentResource(this.selectedProject.getRoot());
 
-        Result result = this.shellTest.execute(("picketlink-setup"), 10, TimeUnit.SECONDS);
+        Result result = executeShellCommand("picketlink-setup");
 
         assertFalse(Failed.class.isInstance(result));
     }
@@ -109,10 +107,14 @@ public abstract class AbstractTestCase {
 
     protected Result executeShellCommand(String command) {
         try {
-            return getShellTest()
+            Result result = getShellTest()
                 .execute((command),
-                    10,
+                    100000,
                     TimeUnit.SECONDS);
+
+            this.selectedProject = this.projectFactory.findProject(this.selectedProject.getRoot());
+
+            return result;
         } catch (TimeoutException e) {
             fail("Command [" + command + "] timeout.");
         }

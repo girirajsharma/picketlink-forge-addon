@@ -48,7 +48,7 @@ import org.jboss.forge.addon.ui.wizard.UIWizard;
 import org.jboss.shrinkwrap.descriptor.api.webapp30.WebAppDescriptor;
 import org.picketlink.authentication.web.AuthenticationFilter;
 import org.picketlink.tools.forge.ConfigurationOperations;
-import org.picketlink.tools.forge.PicketLinkFacetBase;
+import org.picketlink.tools.forge.PicketLinkBaseFacet;
 
 import javax.inject.Inject;
 import java.util.Arrays;
@@ -58,7 +58,7 @@ import static org.picketlink.authentication.web.AuthenticationFilter.AuthType;
 /**
  * @author Pedro Igor
  */
-@FacetConstraint(value = PicketLinkFacetBase.class)
+@FacetConstraint(value = PicketLinkBaseFacet.class)
 public class SecurityFilterSetupWizard extends AbstractProjectCommand implements UIWizard, PrerequisiteCommandsProvider {
 
     @Inject

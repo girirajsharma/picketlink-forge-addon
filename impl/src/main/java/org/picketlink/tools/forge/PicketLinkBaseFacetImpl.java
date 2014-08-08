@@ -26,19 +26,19 @@ import org.jboss.forge.addon.facets.constraints.FacetConstraints;
 import org.jboss.forge.addon.javaee.cdi.CDIFacet_1_1;
 
 /**
- * <p>Default implementation for {@link org.picketlink.tools.forge.PicketLinkFacetBase}.</p>
+ * <p>Default implementation for {@link PicketLinkBaseFacet}.</p>
  *
  * @author Pedro Igor
  *
- * @see org.picketlink.tools.forge.PicketLinkFacetBase
+ * @see PicketLinkBaseFacet
  */
 @FacetConstraints(
     value = {
-        @FacetConstraint(value = PicketLinkFacetIDM.class),
+        @FacetConstraint(value = PicketLinkIDMFacet.class),
         @FacetConstraint(value = CDIFacet_1_1.class)
     }
 )
-public class PicketLinkFacetImplBase extends AbstractPicketLinkFacet implements PicketLinkFacetBase {
+public class PicketLinkBaseFacetImpl extends AbstractPicketLinkFacet implements PicketLinkBaseFacet {
 
     @Override
     protected String getFacetDescription() {

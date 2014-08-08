@@ -30,7 +30,7 @@ import org.jboss.forge.addon.ui.result.NavigationResult;
 import org.jboss.forge.addon.ui.result.Result;
 import org.jboss.forge.addon.ui.result.Results;
 import org.jboss.forge.addon.ui.wizard.UIWizardStep;
-import org.picketlink.tools.forge.PersistenceManager;
+import org.picketlink.tools.forge.operations.PersistenceOperations;
 
 import javax.inject.Inject;
 
@@ -43,7 +43,7 @@ public class JPAIdentityStoreSetupCommand extends AbstractProjectCommand impleme
     private ProjectFactory projectFactory;
 
     @Inject
-    private PersistenceManager persistenceManager;
+    private PersistenceOperations persistenceManager;
 
     @Override
     public void initializeUI(UIBuilder builder) throws Exception {

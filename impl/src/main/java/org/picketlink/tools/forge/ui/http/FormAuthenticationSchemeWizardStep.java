@@ -41,6 +41,7 @@ import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
 import org.jboss.forge.addon.ui.wizard.UIWizardStep;
 import org.jboss.shrinkwrap.descriptor.api.webapp30.WebAppDescriptor;
+import org.picketlink.authentication.web.AuthenticationFilter;
 import org.picketlink.tools.forge.ConfigurationOperations;
 
 import javax.inject.Inject;
@@ -89,6 +90,13 @@ public class FormAuthenticationSchemeWizardStep extends AbstractProjectCommand i
             .getOrCreateFilter()
             .filterName(securityFilterName)
             .removeAllInitParam()
+            .createInitParam()
+            .paramName("authType")
+            .paramValue(AuthenticationFilter.AuthType.FORM.name());
+
+        config
+            .getOrCreateFilter()
+            .filterName(securityFilterName)
             .createInitParam()
             .paramName("form-login-page")
             .paramValue(this.loginPage.getValue());

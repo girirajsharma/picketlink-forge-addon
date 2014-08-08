@@ -25,8 +25,8 @@ import org.jboss.forge.addon.ui.util.Metadata;
 import org.jboss.forge.addon.ui.wizard.UIWizard;
 import org.picketlink.tools.forge.ConfigurationOperations;
 import org.picketlink.tools.forge.MavenDependencies;
+import org.picketlink.tools.forge.PicketLinkBaseFacet;
 import org.picketlink.tools.forge.PicketLinkFacet;
-import org.picketlink.tools.forge.PicketLinkFacetBase;
 import org.picketlink.tools.forge.ui.idm.IdentityManagementSetupWizard;
 
 import javax.inject.Inject;
@@ -84,7 +84,7 @@ public class SetupWizard extends AbstractProjectCommand implements UIWizard {
     @Override
     public Result execute(UIExecutionContext context) throws Exception {
         Project selectedProject = getSelectedProject(context);
-        PicketLinkFacet selectedModule = this.facetFactory.create(selectedProject, PicketLinkFacetBase.class);
+        PicketLinkFacet selectedModule = this.facetFactory.create(selectedProject, PicketLinkBaseFacet.class);
 
         selectedModule.setPicketLinkVersion(this.version.getValue().getVersion());
 

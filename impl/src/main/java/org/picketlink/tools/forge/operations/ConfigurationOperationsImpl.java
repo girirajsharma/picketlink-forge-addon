@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.picketlink.tools.forge;
+package org.picketlink.tools.forge.operations;
 
 import org.jboss.forge.addon.configuration.Configuration;
 import org.jboss.forge.addon.configuration.facets.ConfigurationFacet;
@@ -29,11 +29,9 @@ import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
-import org.jboss.forge.roaster.model.source.MethodSource;
-import org.picketlink.annotations.PicketLink;
-import org.picketlink.authentication.web.HTTPAuthenticationScheme;
 import org.picketlink.config.SecurityConfigurationBuilder;
 import org.picketlink.event.SecurityConfigurationEvent;
+import org.picketlink.tools.forge.ConfigurationOperations;
 import org.picketlink.tools.forge.ui.idm.IdentityStoreType;
 
 import javax.enterprise.event.Observes;
@@ -43,7 +41,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Set;
 
-import static org.picketlink.authentication.web.AuthenticationFilter.AuthType;
+import static org.picketlink.tools.forge.ConfigurationOperations.Properties.PICKETLINK_IDENTITY_STORE_TYPE;
 import static org.picketlink.tools.forge.ConfigurationOperations.Properties.PICKETLINK_TOP_LEVEL_PACKAGE_NAME;
 import static org.picketlink.tools.forge.ConfigurationProperties.IDENTITY_CONFIGURATION_NAME;
 import static org.picketlink.tools.forge.ConfigurationProperties.IDENTITY_STORE_TYPE;
@@ -58,7 +56,7 @@ public class ConfigurationOperationsImpl implements ConfigurationOperations {
     private static final String RESOURCE_PRODUCER_CLASS_NAME = "Resources";
 
     @Inject
-    private AttributedTypeManager attributedTypeManager;
+    private AttributedTypeOperations attributedTypeManager;
 
     public JavaResource newConfiguration(Project selectedProject) {
         StringBuilder methodBodyBuilder = new StringBuilder();
@@ -82,7 +80,7 @@ public class ConfigurationOperationsImpl implements ConfigurationOperations {
     public JavaResource newResourceProducer(Project selectedProject) {
         Configuration configuration = getConfiguration(selectedProject);
 
-        String identityStoreType = configuration.getString(IDENTITY_STORE_TYPE.name(), IdentityStoreType.jpa.name());
+        String identityStoreType = configuration.getString(PICKETLINK_IDENTITY_STORE_TYPE.name(), IdentityStoreType.jpa.name());
 
         if (!IdentityStoreType.jpa.name().equals(identityStoreType)) {
             return null;
@@ -177,9 +175,7 @@ public class ConfigurationOperationsImpl implements ConfigurationOperations {
 
         Configuration configuration = getConfiguration(selectedProject);
 
-        String authenticationScheme = configuration.getString(Properties.PICKETLINK_SECURITY_FILTER_AUTHC_SCHEME.name());
-
-        if (authenticationScheme != null || methodBody.length() > 0) {
+        if (methodBody.length() > 0) {
             String topLevelPackageName = configuration.getString(PICKETLINK_TOP_LEVEL_PACKAGE_NAME.name(), DEFAULT_TOP_LEVEL_PACKAGE);
             JavaResource javaResource = javaFacet
                 .getBasePackageDirectory()
@@ -192,28 +188,28 @@ public class ConfigurationOperationsImpl implements ConfigurationOperations {
                 .setPublic()
                 .setPackage(packageName);
 
-            if (authenticationScheme != null) {
-                javaSource.addImport(HTTPAuthenticationScheme.class);
-                javaSource.addImport(PicketLink.class);
-
-                javaSource
-                    .addField()
-                    .setPrivate()
-                    .setName("authenticationScheme")
-                    .setType(AuthType.valueOf(authenticationScheme).getSchemeType())
-                    .addAnnotation(Inject.class);
-
-                MethodSource<JavaClassSource> produceAuthenticationSchemeMethod = javaSource
-                    .addMethod()
-                    .setPublic()
-                    .setReturnType(HTTPAuthenticationScheme.class)
-                    .setName("produceAuthenticationScheme")
-                    .setBody("return authenticationScheme;");
-
-                produceAuthenticationSchemeMethod.addAnnotation(Produces.class);
-                produceAuthenticationSchemeMethod.addAnnotation(PicketLink.class);
-
-            }
+//            if (authenticationScheme != null) {
+//                javaSource.addImport(HTTPAuthenticationScheme.class);
+//                javaSource.addImport(PicketLink.class);
+//
+//                javaSource
+//                    .addField()
+//                    .setPrivate()
+//                    .setName("authenticationScheme")
+//                    .setType(AuthType.valueOf(authenticationScheme).getSchemeType())
+//                    .addAnnotation(Inject.class);
+//
+//                MethodSource<JavaClassSource> produceAuthenticationSchemeMethod = javaSource
+//                    .addMethod()
+//                    .setPublic()
+//                    .setReturnType(HTTPAuthenticationScheme.class)
+//                    .setName("produceAuthenticationScheme")
+//                    .setBody("return authenticationScheme;");
+//
+//                produceAuthenticationSchemeMethod.addAnnotation(Produces.class);
+//                produceAuthenticationSchemeMethod.addAnnotation(PicketLink.class);
+//
+//            }
 
             if (methodBody.length() > 0) {
                 javaSource.addImport(SecurityConfigurationBuilder.class);

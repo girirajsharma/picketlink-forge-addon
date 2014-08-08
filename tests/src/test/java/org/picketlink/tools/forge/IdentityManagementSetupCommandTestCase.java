@@ -8,6 +8,7 @@ import org.jboss.shrinkwrap.descriptor.api.persistence.PersistenceUnitCommon;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.picketlink.tools.forge.operations.PersistenceOperations;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -19,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 public class IdentityManagementSetupCommandTestCase extends AbstractTestCase {
 
     @Inject
-    private PersistenceManager persistenceManager;
+    private PersistenceOperations persistenceManager;
 
     @Test
     @Ignore("See why JPAFacet is not being installed. This only happen when executing from here. Shell is fine.")
@@ -39,6 +40,6 @@ public class IdentityManagementSetupCommandTestCase extends AbstractTestCase {
 
         List allClazz = persistenceUnitCommon.getAllClazz();
 
-        assertTrue(allClazz.containsAll(this.persistenceManager.getBasicIdentityModelEntityTypes(selectedProject)));
+        assertTrue(allClazz.containsAll(this.persistenceManager.getBasicIdentityModelEntityTypes(selectedProject, null)));
     }
 }

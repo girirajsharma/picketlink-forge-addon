@@ -23,9 +23,9 @@ package org.picketlink.tools.forge;
 
 /**
  * <p>A {@link org.jboss.forge.addon.facets.Facet} providing all the necessary configuration for projects looking for all the
- * features provided by the PicketLink IDM Module.</p>
+ * features provided by the PicketLink Base Module.</p>
  *
  * @author Pedro Igor
  */
-public interface PicketLinkFacetIDM extends PicketLinkFacet {
+public interface PicketLinkBaseFacet extends PicketLinkFacet {
 }

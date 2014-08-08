@@ -91,7 +91,7 @@ public class PicketLinkSetupCommandTestCase extends AbstractTestCase {
 
     public void assertCommandResult(Coordinate expectedVersion, boolean assertDependencies, String packageName) throws Exception {
         Project selectedProject = getSelectedProject();
-        PicketLinkFacetBase picketlinkFacet = selectedProject.getFacet(PicketLinkFacetBase.class);
+        PicketLinkBaseFacet picketlinkFacet = selectedProject.getFacet(PicketLinkBaseFacet.class);
 
         assertNotNull(picketlinkFacet);
 

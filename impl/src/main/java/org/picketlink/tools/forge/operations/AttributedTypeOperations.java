@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.picketlink.tools.forge;
+package org.picketlink.tools.forge.operations;
 
 import org.jboss.forge.addon.dependencies.Dependency;
 import org.jboss.forge.addon.dependencies.DependencyQuery;
@@ -29,15 +29,19 @@ import org.jboss.forge.addon.dependencies.builder.DependencyQueryBuilder;
 import org.jboss.forge.addon.maven.projects.MavenFacet;
 import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
+import org.jboss.forge.addon.projects.facets.DependencyFacet;
 import org.jboss.forge.addon.projects.facets.MetadataFacet;
-import org.jboss.forge.addon.projects.facets.PackagingFacet;
-import org.jboss.forge.addon.resource.FileResource;
 import org.jboss.forge.addon.resource.Resource;
+import org.jboss.forge.roaster.model.JavaType;
 import org.picketlink.idm.model.AttributedType;
+import org.picketlink.idm.model.IdentityType;
+import org.picketlink.idm.model.annotation.AttributeProperty;
 
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.FileSystem;
@@ -58,27 +62,31 @@ import java.util.Set;
  *
  * @author Pedro Igor
  */
-public class AttributedTypeManager {
+public class AttributedTypeOperations {
 
     @Inject
     private DependencyResolver dependencyResolver;
 
     public Set<String> getAttributedTypes(final Project selectedProject) {
-        final Resource<?> artifactResource = performBuild(selectedProject);
-        return findAttributedTypes(selectedProject, artifactResource);
+        URLClassLoader classLoader = null;
+
+        try {
+            classLoader = getProjectClassLoader(selectedProject);
+            final Resource<?> artifactResource = getProjectArtifact(selectedProject);
+            return findAttributedTypes(selectedProject, artifactResource, classLoader);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not load type.", e);
+        } finally {
+            if (classLoader != null) {
+                try {
+                    classLoader.close();
+                } catch (IOException ignore) {
+                }
+            }
+        }
     }
 
-    private Resource<?> performBuild(Project selectedProject) {
-        PackagingFacet packagingFacet = selectedProject.getFacet(PackagingFacet.class);
-
-        return packagingFacet
-            .createBuilder()
-            .addArguments("clean", "install")
-            .runTests(false)
-            .build();
-    }
-
-    private Set<String> findAttributedTypes(final Project selectedProject, Resource<?> projectArtifact) {
+    private Set<String> findAttributedTypes(final Project selectedProject, Resource<?> projectArtifact, final ClassLoader classLoader) {
         final Set<String> entityTypes = new HashSet<>();
 
         try (FileSystem fs = FileSystems.newFileSystem(Paths.get(projectArtifact.getFullyQualifiedName()), null)) {
@@ -93,6 +101,7 @@ public class AttributedTypeManager {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                     String filePath = file.toString();
+
                     String suffix = ".class";
 
                     if (filePath.endsWith(suffix)) {
@@ -105,31 +114,24 @@ public class AttributedTypeManager {
                         filePath = filePath.substring(filePath.indexOf(basePackagePath));
 
                         String typeName = filePath.replace(File.separatorChar, '.');
-                        URLClassLoader classLoader = getProjectClassLoader(selectedProject);
+
+                        Class<?> type = null;
 
                         try {
-                            Class<?> type = classLoader.loadClass(typeName);
+                            type = classLoader.loadClass(typeName);
+                        } catch (ClassNotFoundException e) {
 
-                            if (isAttributedType(type, classLoader)) {
-                                entityTypes.add(type.getName());
-                            }
-                        } catch (Exception e) {
-                            throw new RuntimeException("Could not load type [" + typeName + "].", e);
-                        } finally {
-                            if (classLoader != null) {
-                                try {
-                                    classLoader.close();
-                                } catch (IOException ignore) {
-                                }
-                            }
+                        }
+
+                        if (isAttributedType(type, classLoader)) {
+                            entityTypes.add(type.getName());
                         }
                     }
 
                     return FileVisitResult.CONTINUE;
                 }
             });
-        } catch (IOException e) {
-//            throw new RuntimeException("Could not find entity types.", e);
+        } catch (IOException ignore) {
         }
 
         return entityTypes;
@@ -143,17 +145,27 @@ public class AttributedTypeManager {
         return "/";
     }
 
-    private URLClassLoader getProjectClassLoader(Project selectedProject) {
+    public URLClassLoader getProjectClassLoader(Project selectedProject) {
         try {
-            MavenFacet mavenFacet = selectedProject.getFacet(MavenFacet.class);
             MetadataFacet metadataFacet = selectedProject.getFacet(MetadataFacet.class);
-            DependencyQuery projectDependencyQuery = create(metadataFacet.getOutputDependency(), mavenFacet.getModel().getPackaging());
-            FileResource<?> projectArtifact = getProjectArtifact(selectedProject);
+            MavenFacet mavenFacet = selectedProject.getFacet(MavenFacet.class);
+            DependencyQuery projectDependencyQuery = create(metadataFacet.getOutputDependency(), mavenFacet.getModel()
+                .getPackaging());
+            Resource<?> projectArtifact = getProjectArtifact(selectedProject);
             List<URL> dependenciesURL = new ArrayList<>();
 
             dependenciesURL.add(new URL(formatJarUrl(projectArtifact, getPackageRootPath(mavenFacet))));
 
-            for (Dependency dependency: dependencyResolver.resolveDependencies(projectDependencyQuery)) {
+            for (Dependency dependency : dependencyResolver.resolveDependencies(projectDependencyQuery)) {
+                dependenciesURL.add(new URL(formatJarUrl(dependency.getArtifact(), "/")));
+            }
+
+            DependencyFacet dependencyFacet = selectedProject.getFacet(DependencyFacet.class);
+
+            List<Dependency> effectiveDependencies = dependencyFacet.getEffectiveDependencies();
+
+            for (Dependency dependency : effectiveDependencies) {
+                dependency = this.dependencyResolver.resolveArtifact(create(dependency, "jar"));
                 dependenciesURL.add(new URL(formatJarUrl(dependency.getArtifact(), "/")));
             }
 
@@ -163,7 +175,7 @@ public class AttributedTypeManager {
         }
     }
 
-    private FileResource<?> getProjectArtifact(Project selectedProject) {
+    private Resource<?> getProjectArtifact(Project selectedProject) {
         MavenFacet mavenFacet = selectedProject.getFacet(MavenFacet.class);
         MetadataFacet metadataFacet = selectedProject.getFacet(MetadataFacet.class);
         DependencyQuery projectDependencyQuery = create(metadataFacet.getOutputDependency(), mavenFacet.getModel().getPackaging());
@@ -171,7 +183,7 @@ public class AttributedTypeManager {
         return dependencyResolver.resolveArtifact(projectDependencyQuery).getArtifact();
     }
 
-    private String formatJarUrl(FileResource<?> artifact, String packageRootPath) {
+    private String formatJarUrl(Resource<?> artifact, String packageRootPath) {
         return "jar:file:" + artifact.getFullyQualifiedName() + "!" + packageRootPath;
     }
 
@@ -202,5 +214,26 @@ public class AttributedTypeManager {
                 .create(dependency)
                 .setPackaging(packaging)
                 .getCoordinate());
+    }
+
+    public Class toIdentityType(JavaType<?> javaType, URLClassLoader classLoader) {
+        Class<?> identityTypeType = loadClass(IdentityType.class.getName(), classLoader);
+        Class<?> expectedIdentityType = loadClass(javaType.getQualifiedName(), classLoader);
+
+        if (identityTypeType.isAssignableFrom(expectedIdentityType)) {
+            return expectedIdentityType;
+        }
+
+        return null;
+    }
+
+    public boolean isAttributeProperty(Field declaredField) {
+        for (Annotation annotation : declaredField.getDeclaredAnnotations()) {
+            if (AttributeProperty.class.getName().equals(annotation.annotationType().getName())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

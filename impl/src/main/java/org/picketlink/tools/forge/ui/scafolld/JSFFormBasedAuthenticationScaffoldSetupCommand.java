@@ -41,13 +41,14 @@ import org.jboss.forge.addon.ui.result.Results;
 import org.jboss.forge.addon.ui.result.navigation.NavigationResultBuilder;
 import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
-import org.picketlink.tools.forge.PicketLinkFacetBase;
+import org.picketlink.tools.forge.PicketLinkBaseFacet;
 import org.picketlink.tools.forge.ui.SetupWizard;
 import org.picketlink.tools.forge.ui.http.SecurityFilterSetupWizard;
 
 import javax.inject.Inject;
 
 import static org.picketlink.tools.forge.util.ResourceUtil.createJavaResourceIfNecessary;
+import static org.picketlink.tools.forge.util.ResourceUtil.createSecurityInitializerifNecessary;
 import static org.picketlink.tools.forge.util.ResourceUtil.createWebResourceIfNecessary;
 
 /**
@@ -78,7 +79,7 @@ public class JSFFormBasedAuthenticationScaffoldSetupCommand extends AbstractProj
     public Result execute(UIExecutionContext context) throws Exception {
         Project selectedProject = getSelectedProject(context);
 
-        createJavaResourceIfNecessary(selectedProject, "SecurityInitializer.java", "/scaffold/jsfformauthc/classes/SecurityInitializer.java");
+        createSecurityInitializerifNecessary(selectedProject);
         createJavaResourceIfNecessary(selectedProject, "LoginController.java", "/scaffold/jsfformauthc/classes/LoginController.java");
 
         createWebResourceIfNecessary(selectedProject, "index.html", "/scaffold/jsfformauthc/index.html");
@@ -113,7 +114,7 @@ public class JSFFormBasedAuthenticationScaffoldSetupCommand extends AbstractProj
                 builder.add(EJBSetupWizard.class);
             }
 
-            if (!project.hasFacet(PicketLinkFacetBase.class)) {
+            if (!project.hasFacet(PicketLinkBaseFacet.class)) {
                 builder.add(SetupWizard.class);
             }
 

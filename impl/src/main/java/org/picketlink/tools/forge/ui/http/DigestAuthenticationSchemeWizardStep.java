@@ -41,6 +41,7 @@ import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
 import org.jboss.forge.addon.ui.wizard.UIWizardStep;
 import org.jboss.shrinkwrap.descriptor.api.webapp30.WebAppDescriptor;
+import org.picketlink.authentication.web.AuthenticationFilter;
 import org.picketlink.tools.forge.ConfigurationOperations;
 
 import javax.inject.Inject;
@@ -82,6 +83,13 @@ public class DigestAuthenticationSchemeWizardStep extends AbstractProjectCommand
             .getOrCreateFilter()
             .filterName(securityFilterName)
             .removeAllInitParam()
+            .createInitParam()
+            .paramName("authType")
+            .paramValue(AuthenticationFilter.AuthType.DIGEST.name());
+
+        config
+            .getOrCreateFilter()
+            .filterName(securityFilterName)
             .createInitParam()
             .paramName("realmName")
             .paramValue(this.realmName.getValue());

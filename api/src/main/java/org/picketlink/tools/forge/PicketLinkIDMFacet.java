@@ -21,34 +21,11 @@
  */
 package org.picketlink.tools.forge;
 
-import org.jboss.forge.addon.dependencies.Dependency;
-import org.jboss.forge.addon.facets.constraints.FacetConstraint;
-import org.jboss.forge.addon.facets.constraints.FacetConstraints;
-import org.jboss.forge.addon.maven.projects.MavenFacet;
-
-import static org.picketlink.tools.forge.MavenDependencies.IDM_MODULE_REQUIRED_DEPENDENCIES;
-
 /**
- * <p>Default implementation for {@link PicketLinkFacetIDM}.</p>
+ * <p>A {@link org.jboss.forge.addon.facets.Facet} providing all the necessary configuration for projects looking for all the
+ * features provided by the PicketLink IDM Module.</p>
  *
  * @author Pedro Igor
- *
- * @see PicketLinkFacetBase
  */
-@FacetConstraints(
-    value = {
-        @FacetConstraint(value = MavenFacet.class)
-    }
-)
-public class PicketLinkFacetImplIDM extends AbstractPicketLinkFacet implements PicketLinkFacetIDM {
-
-    @Override
-    protected Dependency[] getRequiredDependencies() {
-        return IDM_MODULE_REQUIRED_DEPENDENCIES;
-    }
-
-    @Override
-    protected String getFacetDescription() {
-        return "PicketLink IDM. This module provides enables Identity Management to your project.";
-    }
+public interface PicketLinkIDMFacet extends PicketLinkFacet {
 }
