@@ -54,7 +54,9 @@ More details on http://picketlink.org[picketlink.org].
 
 == Building Sources and Forge Installation
 
-If you want to use the latest changes for this addon, please clone the https://github.com/picketlink/picketlink-forge-addon/[PicketLink Forge Addon Repository] in GitHub
+If you want to use the latest changes for this addon, please clone the https://github.com/picketlink/picketlink-forge-addon/[PicketLink Forge Addon Repository] in GitHub.
+
+        git clone https://github.com/picketlink/picketlink-forge-addon/
 
 == Features
 
