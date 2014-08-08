@@ -86,6 +86,10 @@ If everything was fine, you should be able to see the following command in Forge
 
 == Features
 
+NOTE:When using this addon keep in mind that once your project is properly configured you are able to use whatever feature provide
+by the PicketLink project. The addon provides specific commands for some of the most common tasks when working with PicketLink.
+Please check http://picketlink.org[picketlink.org] for more information about its features.
+
 Configuration of Maven Dependencies::
    This addon configures all the necessary PicketLink dependencies to your project's pom.xml. All PicketLink-related dependencies are managed
    by the PicketLink Bill Of Materials(BOM) as well their respective versions.
