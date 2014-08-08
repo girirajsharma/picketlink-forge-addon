@@ -31,6 +31,7 @@ import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.facets.DependencyFacet;
 import org.jboss.forge.addon.projects.facets.MetadataFacet;
+import org.jboss.forge.addon.projects.facets.PackagingFacet;
 import org.jboss.forge.addon.resource.Resource;
 import org.jboss.forge.roaster.model.JavaType;
 import org.picketlink.idm.model.AttributedType;
@@ -176,11 +177,7 @@ public class AttributedTypeOperations {
     }
 
     private Resource<?> getProjectArtifact(Project selectedProject) {
-        MavenFacet mavenFacet = selectedProject.getFacet(MavenFacet.class);
-        MetadataFacet metadataFacet = selectedProject.getFacet(MetadataFacet.class);
-        DependencyQuery projectDependencyQuery = create(metadataFacet.getOutputDependency(), mavenFacet.getModel().getPackaging());
-
-        return dependencyResolver.resolveArtifact(projectDependencyQuery).getArtifact();
+        return performBuild(selectedProject);
     }
 
     private String formatJarUrl(Resource<?> artifact, String packageRootPath) {
@@ -235,5 +232,15 @@ public class AttributedTypeOperations {
         }
 
         return false;
+    }
+
+    private Resource<?> performBuild(Project selectedProject) {
+        PackagingFacet packagingFacet = selectedProject.getFacet(PackagingFacet.class);
+
+        return packagingFacet
+            .createBuilder()
+            .addArguments("clean", "install")
+            .runTests(false)
+            .build();
     }
 }
