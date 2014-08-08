@@ -86,13 +86,22 @@ If everything was fine, you should be able to see the following command in Forge
 
 == Features
 
-Configuration of PicketLink Maven Dependencies::
+Configuration of Maven Dependencies::
    This addon configures all the necessary PicketLink dependencies to your project's pom.xml. All PicketLink-related dependencies are managed
-by the PicketLink Bill Of Materials(BOM) as well their respective versions.
+   by the PicketLink Bill Of Materials(BOM) as well their respective versions.
 
 Swtich between different PicketLink Versions::
-   This addon provides a easy way to choose a specific PicketLink version. This is useful if you want to test a specific version, including
-snapshots. By default, the latest final released version is configured.
+   This addon provides an easy way to choose a specific PicketLink version. This is useful if you want to test a specific version, including
+   snapshots. By default, the latest final released version is configured.
+
+Enable Authentication based on the standards HTTP Authentication Schemes ::
+   This addon provides an easy way to enable authentication to your project using any of the aviable and supported 
+   HTTP Authentication Scheme such as FORM, BASIC, DIGEST and CLIENT_CERT.
+   
+Enable Identity Management using a Database or Filesystem to store identity data ::
+   This addon provides an easy way to enable Identity Management to your project using a Database or Filesystem to store
+   your identity data such as users, roles, groups and so forth. You can choose to use the http://docs.jboss.org/picketlink/2/latest/reference/html-single/#sect-Basic_Identity_Model[PicketLink Basic Model]
+   or provide your own custom Identity Model to represent your users, roles, groups or any other type of identity.
 
 +
 Descriptors are handled by the https://github.com/shrinkwrap/descriptors[ShrinkWrap Descriptors] project. Read the Facets addon README to learn how to handle facets in Forge. Below is a table that lists each facet and its purpose.
