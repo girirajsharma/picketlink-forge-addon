@@ -89,6 +89,7 @@ If everything was fine, you should be able to see the following command in Forge
 Configuration of PicketLink Maven Dependencies::
    This addon configures all the necessary PicketLink dependencies to your project's pom.xml. All PicketLink-related dependencies are managed
 by the PicketLink Bill Of Materials(BOM) as well their respective versions.
+
 Swtich between different PicketLink Versions::
    This addon provides a easy way to choose a specific PicketLink version. This is useful if you want to test a specific version, including
 snapshots. By default, the latest final released version is configured.
