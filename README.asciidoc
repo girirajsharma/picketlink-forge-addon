@@ -66,6 +66,8 @@ Make sure Forge is properly installed and configured in your environment. If so,
 
         forge
         
+IMPORTANT: For more details about how to install Forge, follow the instructions https://github.com/forge/core/blob/master/README.asciidoc[here].
+        
 Once you're in Forge Shell perform a build as follows:
 
         build --notest clean install
