@@ -115,7 +115,7 @@ Project Templates ::
 +
 [options="header,asciidoc"]
 |===
-|Template|Description
+|Command|Description
 
 |`picketlink-jsf-form-authentication-scaffold-generate`
 |Creates a JSF-based project providing form authentication and also logout functionality. You can see from this template how to write a JSF login page
