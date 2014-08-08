@@ -4,8 +4,7 @@
 The picketlink-forge-addon enables security to your project by providing configuration options to quickly setup *Authentication*, 
 *Authorization* and *Identity Management* to your project.
 
-PicketLink is a an umbrella project for Security and Identity Management for Java Applications and fully integrated with CDI. It is 
-fully integrated with CDI and providing:
+PicketLink is an umbrella project for Security and Identity Management for Java Applications and fully integrated with CDI:
 
 - JavaEE Security
 - Identity Management
