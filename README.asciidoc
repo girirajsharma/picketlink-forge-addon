@@ -14,7 +14,7 @@ PicketLink is an umbrella project for Security and Identity Management for Java 
 - Authorization based on Security Annotations and EL Expressions
 - RESTFul and Mobile Security Features
 
-More details on http://picketlink.org [picketlink.org]. 
+More details on http://picketlink.org[picketlink.org]. 
         
 === Depends on
 
@@ -26,10 +26,6 @@ More details on http://picketlink.org [picketlink.org].
 |no
 |no
 
-|templates
-|no
-|no
-
 |projects
 |yes
 |no
@@ -38,15 +34,15 @@ More details on http://picketlink.org [picketlink.org].
 |yes
 |no
 
-|parser-xml
+|javaee
 |yes
 |no
 
-|text
+|configuration
 |yes
 |no
 
-|javaee-spi
+|maven
 |yes
 |no
 
