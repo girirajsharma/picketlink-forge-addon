@@ -41,11 +41,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Set;
 
+import static org.picketlink.tools.forge.ConfigurationOperations.Properties.PICKETLINK_IDENTITY_CONFIGURATION_NAME;
 import static org.picketlink.tools.forge.ConfigurationOperations.Properties.PICKETLINK_IDENTITY_STORE_TYPE;
+import static org.picketlink.tools.forge.ConfigurationOperations.Properties.PICKETLINK_STATELESS_IDENTITY;
 import static org.picketlink.tools.forge.ConfigurationOperations.Properties.PICKETLINK_TOP_LEVEL_PACKAGE_NAME;
-import static org.picketlink.tools.forge.ConfigurationProperties.IDENTITY_CONFIGURATION_NAME;
-import static org.picketlink.tools.forge.ConfigurationProperties.IDENTITY_STORE_TYPE;
-import static org.picketlink.tools.forge.ConfigurationProperties.STATELESS_IDENTITY;
 
 /**
  * @author Pedro Igor
@@ -116,7 +115,7 @@ public class ConfigurationOperationsImpl implements ConfigurationOperations {
 
     private StringBuilder createIdentityBeanConfiguration(Project selectedProject) {
         StringBuilder config = new StringBuilder();
-        boolean statelessIdentity = getConfiguration(selectedProject).getBoolean(STATELESS_IDENTITY.name(), false);
+        boolean statelessIdentity = getConfiguration(selectedProject).getBoolean(PICKETLINK_STATELESS_IDENTITY.name(), false);
 
         if (statelessIdentity) {
             config
@@ -130,8 +129,8 @@ public class ConfigurationOperationsImpl implements ConfigurationOperations {
     private StringBuilder createIdentityManagementConfiguration(Project selectedProject) {
         StringBuilder config = new StringBuilder();
         Configuration configuration = getConfiguration(selectedProject);
-        String identityConfigurationName = configuration.getString(IDENTITY_CONFIGURATION_NAME.name(), "default.config");
-        String identityStoreType = configuration.getString(IDENTITY_STORE_TYPE.name(), IdentityStoreType.jpa.name());
+        String identityConfigurationName = configuration.getString(PICKETLINK_IDENTITY_CONFIGURATION_NAME.name(), "default.config");
+        String identityStoreType = configuration.getString(PICKETLINK_IDENTITY_STORE_TYPE.name(), IdentityStoreType.jpa.name());
 
         Set<String> attributedTypes = this.attributedTypeManager.getAttributedTypes(selectedProject);
 

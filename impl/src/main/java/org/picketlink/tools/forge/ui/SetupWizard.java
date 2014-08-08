@@ -5,6 +5,7 @@ import org.jboss.forge.addon.configuration.facets.ConfigurationFacet;
 import org.jboss.forge.addon.convert.Converter;
 import org.jboss.forge.addon.dependencies.Coordinate;
 import org.jboss.forge.addon.facets.FacetFactory;
+import org.jboss.forge.addon.parser.java.facets.JavaSourceFacet;
 import org.jboss.forge.addon.parser.java.resources.JavaResource;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFactory;
@@ -63,8 +64,8 @@ public class SetupWizard extends AbstractProjectCommand implements UIWizard {
     private UIInput<Boolean> showSnapshots;
 
     @Inject
-    @WithAttributes(label = "Top Level Package", required = true, description = "The top level package where security-related classes will reside", defaultValue = DEFAULT_TOP_LEVEL_PACKAGE)
-    private UIInput<String> topLevelPackage;
+    @WithAttributes(label = "Security Package", required = true, description = "The top level package where security-related classes will reside", defaultValue = DEFAULT_TOP_LEVEL_PACKAGE)
+    private UIInput<String> securityPackage;
 
     @Override
     public UICommandMetadata getMetadata(UIContext context) {
@@ -78,7 +79,7 @@ public class SetupWizard extends AbstractProjectCommand implements UIWizard {
     public void initializeUI(UIBuilder builder) throws Exception {
         builder.add(this.showSnapshots);
         initializeUISelectVersions(builder);
-        builder.add(this.topLevelPackage);
+        builder.add(this.securityPackage);
     }
 
     @Override
@@ -89,8 +90,9 @@ public class SetupWizard extends AbstractProjectCommand implements UIWizard {
         selectedModule.setPicketLinkVersion(this.version.getValue().getVersion());
 
         Configuration configuration = selectedProject.getFacet(ConfigurationFacet.class).getConfiguration();
+        JavaSourceFacet javaFacet = selectedProject.getFacet(JavaSourceFacet.class);
 
-        configuration.setProperty(PICKETLINK_TOP_LEVEL_PACKAGE_NAME.name(), this.topLevelPackage.getValue());
+        configuration.setProperty(PICKETLINK_TOP_LEVEL_PACKAGE_NAME.name(), javaFacet.getBasePackage() + "." + this.securityPackage.getValue());
 
         if (this.facetFactory.install(selectedProject, selectedModule)) {
             createDefaultConfiguration(context, selectedProject);
