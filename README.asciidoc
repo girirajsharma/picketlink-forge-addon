@@ -127,3 +127,12 @@ and a specific bean to perform authentication based on an username and password 
 use PicketLink Security Filter to enable HTTP Form Authentication if you want to use a simple HTML or JSP page.
 
 |===
+
+== Want to Contribute ?
+
+Help us to improve this addon by giving us feedback or suggestions about its features. If you think a specific configuration
+task or feature should be provided by this addon, please let us know.
+
+We want to improve this addon as much as possible and provide a better experience for people looking to enable security in their projects.
+
+You can open an issue at https://issues.jboss.org/browse/PLINK[PLINK].
