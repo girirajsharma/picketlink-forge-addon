@@ -70,8 +70,6 @@ Once you're in Forge Shell perform a build as follows:
 
         build --notest clean install
         
-**Teste
-        
 After that, enter the *addon* module 
 
         cd addon
@@ -79,6 +77,10 @@ After that, enter the *addon* module
 And finally install the addon into your Forge installation
 
         addon-build-and-install
+        
+If everything was fine, you should be able to see the following command in Forge Shell
+
+        picketlink-setup
 
 == Features
 
