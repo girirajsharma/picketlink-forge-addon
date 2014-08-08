@@ -63,7 +63,7 @@ public class BasicIdentityModelSetupCommand extends AbstractProjectCommand imple
     private DependencyInstaller dependencyInstaller;
 
     @Inject
-    @WithAttributes(label = "Creates a Default User", required = true, description = "Indicates if a default user should be created.", defaultValue = "false")
+    @WithAttributes(label = "Generate Default Identities.", required = true, description = "Generates some default users, roles and groups.", defaultValue = "false")
     private UIInput<Boolean> generateDefaultIdentities;
 
     @Override

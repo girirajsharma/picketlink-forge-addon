@@ -26,8 +26,8 @@ import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
 import org.jboss.forge.addon.ui.wizard.UIWizard;
 import org.picketlink.tools.forge.ConfigurationOperations;
-import org.picketlink.tools.forge.operations.PersistenceOperations;
 import org.picketlink.tools.forge.PicketLinkBaseFacet;
+import org.picketlink.tools.forge.operations.PersistenceOperations;
 
 import javax.inject.Inject;
 
@@ -64,10 +64,6 @@ public class IdentityManagementSetupWizard extends AbstractProjectCommand implem
     @WithAttributes(label = "Identity Store Type", required = true, description = "The identity store to be used")
     private UISelectOne<IdentityStoreType> identityStoreType;
 
-    @Inject
-    @WithAttributes(label = "Basic Model", required = true, description = "Indicates if the Basic Identity Model should be used or not", defaultValue = "true")
-    private UIInput<Boolean> basicIdentityModel;
-
     @Override
     public UICommandMetadata getMetadata(UIContext context) {
         return Metadata.forCommand(IdentityManagementSetupWizard.class)
@@ -83,8 +79,6 @@ public class IdentityManagementSetupWizard extends AbstractProjectCommand implem
         this.identityStoreType.setValueChoices(asList(IdentityStoreType.values()));
         this.identityStoreType.setDefaultValue(IdentityStoreType.jpa);
         builder.add(this.identityStoreType);
-
-        builder.add(this.basicIdentityModel);
     }
 
     @Override
@@ -95,8 +89,6 @@ public class IdentityManagementSetupWizard extends AbstractProjectCommand implem
         configuration.setProperty(ConfigurationOperations.Properties.PICKETLINK_IDENTITY_CONFIGURATION_NAME.name(), this.named.getValue());
 
         IdentityStoreType identityStoreType = this.identityStoreType.getValue();
-
-        configuration.setProperty(ConfigurationOperations.Properties.PICKETLINK_IDENTITY_BASIC_MODEL.name(), this.basicIdentityModel.getValue());
 
         configuration.setProperty(ConfigurationOperations.Properties.PICKETLINK_IDENTITY_STORE_TYPE.name(), identityStoreType.name());
 

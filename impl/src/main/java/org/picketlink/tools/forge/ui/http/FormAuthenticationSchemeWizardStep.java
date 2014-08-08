@@ -28,17 +28,13 @@ import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFactory;
 import org.jboss.forge.addon.projects.ui.AbstractProjectCommand;
 import org.jboss.forge.addon.ui.context.UIBuilder;
-import org.jboss.forge.addon.ui.context.UIContext;
 import org.jboss.forge.addon.ui.context.UIExecutionContext;
 import org.jboss.forge.addon.ui.context.UINavigationContext;
 import org.jboss.forge.addon.ui.input.UIInput;
-import org.jboss.forge.addon.ui.metadata.UICommandMetadata;
 import org.jboss.forge.addon.ui.metadata.WithAttributes;
 import org.jboss.forge.addon.ui.result.NavigationResult;
 import org.jboss.forge.addon.ui.result.Result;
 import org.jboss.forge.addon.ui.result.Results;
-import org.jboss.forge.addon.ui.util.Categories;
-import org.jboss.forge.addon.ui.util.Metadata;
 import org.jboss.forge.addon.ui.wizard.UIWizardStep;
 import org.jboss.shrinkwrap.descriptor.api.webapp30.WebAppDescriptor;
 import org.picketlink.authentication.web.AuthenticationFilter;
@@ -51,7 +47,7 @@ import static org.picketlink.tools.forge.util.ResourceUtil.createWebResourceIfNe
 /**
  * @author Pedro Igor
  */
-public class FormAuthenticationSchemeWizardStep extends AbstractProjectCommand implements UIWizardStep{
+public class FormAuthenticationSchemeWizardStep extends AbstractProjectCommand implements UIWizardStep {
 
     @Inject
     private ProjectFactory projectFactory;
@@ -63,14 +59,6 @@ public class FormAuthenticationSchemeWizardStep extends AbstractProjectCommand i
     @Inject
     @WithAttributes(label = "Authentication Error Page", required = true, description = "The page URI that will be used to redirect the user on unsuccessful authentication.", defaultValue = "/loginFailed.html")
     private UIInput<String> errorPage;
-
-    @Override
-    public UICommandMetadata getMetadata(UIContext context) {
-        return Metadata.forCommand(SecurityFilterSetupWizard.class)
-            .name("PicketLink HTTP Form Authentication: Setup")
-            .description("Enables HTTP Form Authentication to your project.")
-            .category(Categories.create("picketlink"));
-    }
 
     @Override
     public void initializeUI(UIBuilder builder) throws Exception {
