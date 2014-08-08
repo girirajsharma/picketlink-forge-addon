@@ -57,6 +57,28 @@ More details on http://picketlink.org[picketlink.org].
 If you want to use the latest changes for this addon, please clone the https://github.com/picketlink/picketlink-forge-addon/[PicketLink Forge Addon Repository] in GitHub.
 
         git clone https://github.com/picketlink/picketlink-forge-addon/
+        
+Once you've successfully cloned the repository, navigate to the newly created directory:
+
+        cd picketlink-forge-addon
+        
+Make sure Forge is properly installed and configured in your environment. If so, you should be able to start Forge by typing
+
+        forge
+        
+Once you're in Forge Shell perform a build as follows:
+
+        build --notest clean install
+        
+**Teste
+        
+After that, enter the *addon* module 
+
+        cd addon
+        
+And finally install the addon into your Forge installation
+
+        addon-build-and-install
 
 == Features
 
