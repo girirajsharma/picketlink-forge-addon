@@ -86,8 +86,13 @@ If everything was fine, you should be able to see the following command in Forge
 
 == Features
 
-Projects addon integration::
-   This addon provides several `ProjectFacet` implementations for use in developing `forge-addon` projects. By using the javaee addon, it is possible to add Java EE capabilities to a specific project by adding the required technology as a provided dependency in the build descriptor.
+Configuration of PicketLink Maven Dependencies::
+   This addon configures all the necessary PicketLink dependencies to your project's pom.xml. All PicketLink-related dependencies are managed
+by the PicketLink Bill Of Materials(BOM) as well their respective versions.
+Swtich between different PicketLink Versions::
+   This addon provides a easy way to choose a specific PicketLink version. This is useful if you want to test a specific version, including
+snapshots. By default, the latest final released version is configured.
+
 +
 Descriptors are handled by the https://github.com/shrinkwrap/descriptors[ShrinkWrap Descriptors] project. Read the Facets addon README to learn how to handle facets in Forge. Below is a table that lists each facet and its purpose.
 +
